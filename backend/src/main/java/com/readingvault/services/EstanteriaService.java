@@ -9,7 +9,7 @@ import com.readingvault.models.Libro;
 import com.readingvault.models.LibroEstanteria;
 import com.readingvault.repositories.EstanteriaRepository;
 import com.readingvault.repositories.LibroEstanteriaRepository;
-import com.readingvault.repositories.LibroRepository; // <-- IMPORTANTE
+import com.readingvault.repositories.LibroRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -25,36 +25,46 @@ public class EstanteriaService {
     @Autowired
     private LibroEstanteriaRepository libroEstanteriaRepository;
 
+    /**
+     * Guarda una nueva estantería en la base de datos.
+     */
     public Estanteria crearEstanteria(Estanteria estanteria) {
         return estanteriaRepository.save(estanteria);
     }
 
+    /**
+     * Agrega un libro desde la búsqueda de Google a una estantería del usuario.
+     * Si el libro no existe en la BD local, lo crea primero.
+     */
     @Transactional
     public void agregarLibroAEstanteria(LibroExternoDTO libroExterno, Long usuarioId, String nombreEstanteria) {
-        
-        // Buscamos o creamos el libro en la base de datos local
+
+        // Buscamos el libro en nuestra BD local para no repetir datos
         Libro libroLocal = libroRepository.findByTituloAndAutor(libroExterno.getTitle(), libroExterno.getNombrePrimerAutor())
                 .orElseGet(() -> {
+                    // Si no existe, mapeamos los datos del DTO de Google al modelo Libro
                     Libro nuevoLibro = new Libro();
                     nuevoLibro.setTitulo(libroExterno.getTitle());
                     nuevoLibro.setAutor(libroExterno.getNombrePrimerAutor());
                     nuevoLibro.setDescripcion("Páginas: " + libroExterno.getNumberOfPages());
-                    nuevoLibro.setFotoPortada(libroExterno.getUrlPortada()); 
+                    // Usamos coverId porque ahí guardamos la URL de Google
+                    nuevoLibro.setFotoPortada(libroExterno.getCoverId());
                     return libroRepository.save(nuevoLibro);
                 });
 
-        // Buscamos la estantería 
+        // Buscamos la estantería específica del usuario (ej. "Favoritos", "Leídos")
         Estanteria estanteria = estanteriaRepository.findByUsuario_IdUsuarioAndNombre(usuarioId, nombreEstanteria)
                 .orElseThrow(() -> new RuntimeException("La estantería '" + nombreEstanteria + "' no existe para este usuario"));
 
-        // Evitar duplicados y guardar la relación
+        // Verificamos si el libro ya está en esa estantería para evitar duplicados
         boolean yaExiste = libroEstanteriaRepository.existsByEstanteriaAndLibro(estanteria, libroLocal);
-        
+
         if (!yaExiste) {
+            // Creamos la relación en la tabla intermedia
             LibroEstanteria relacion = new LibroEstanteria();
             relacion.setEstanteria(estanteria);
             relacion.setLibro(libroLocal);
-            // La fecha se pone sola si usaste @PrePersist en el modelo
+            // La fecha se gestiona automáticamente en el modelo
             libroEstanteriaRepository.save(relacion);
         }
     }

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Footer(){
     return(
         <section className="footer">
@@ -20,13 +22,13 @@ export default function Footer(){
             <div className="footer__enlaces">
                 <div className="enlaces__web">
                     <h2 className="web__titulo"><a href="" className="web__enlace--grande">ReadingVault</a></h2>
-                    <link to="/buscadorLibros" className="web__enlace">Libros</link>
-                    <link to="/explorar" className="web__enlace">Explorar</link>
+                    <Link to="/buscadorLibros" className="web__enlace">Libros</Link>
+                    <Link to="/explorar" className="web__enlace">Explorar</Link>
                 </div>
                 <div className="enlaces__comunidad">
                     <h2 className="comunidad__titulo"><a href="" className="comunidad__enlace--grande">ReadingVault</a></h2>
-                    <link to="/comunidad" className="comunidad__enlace">Grupos de lectura</link>
-                    <link to="/invitarAmigo" className="comunidad__enlace">invitar a un amigo</link>
+                    <Link to="/comunidad" className="comunidad__enlace">Grupos de lectura</Link>
+                    <Link to="/invitarAmigo" className="comunidad__enlace">invitar a un amigo</Link>
                 </div>
             </div>
 
@@ -36,8 +38,8 @@ export default function Footer(){
                 </div>
 
                 <div className="legal__enlaces">
-                    <link to="/privacidad" className="legal__enlace">Política de privacidad</link>
-                    <link to="/condiciones" className="legal__enlace">Términos y condiciones</link>
+                    <Link to="/privacidad" className="legal__enlace">Política de privacidad</Link>
+                    <Link to="/condiciones" className="legal__enlace">Términos y condiciones</Link>
                 </div>
             </div>
         </section>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import '../assets/css/hero.css'
 
 
@@ -17,9 +18,9 @@ export default function Hero() {
           </h3>
         </div>
         <div className="texto__boton">
-          <link to="/login" className="texto__enlace">
+          <Link to="/login" className="texto__enlace">
             ENTRAR
-          </link>
+          </Link>
         </div>
       </div>
       {/*

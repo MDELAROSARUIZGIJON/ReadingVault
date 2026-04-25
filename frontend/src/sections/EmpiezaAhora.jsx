@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function EmpiezaAhora() {
     return(
         <section className="empieza">
@@ -8,7 +10,7 @@ export default function EmpiezaAhora() {
                 <div className="empieza__descripcion">
                     <p className="empieza__parrafo">No solo llevas un registro de tus libros. Comparte experiencias, descubre nuevas lecturas y forma parte de una comunidad que disfruta leyendo tanto como tú.</p>
                     <div className="empieza__boton">
-                        <link to="/registro" className="empieza__enlace">EMPIEZA AHORA</link>
+                        <Link to="/registro" className="empieza__enlace">EMPIEZA AHORA</Link>
                     </div>
                 </div>
         </section>

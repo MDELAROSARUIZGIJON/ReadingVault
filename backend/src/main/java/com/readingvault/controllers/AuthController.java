@@ -26,7 +26,7 @@ import com.readingvault.services.UsuarioService;
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager; // El "validador" oficial
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtUtil jwtUtil;

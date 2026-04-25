@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Si no existe, intentamos buscar por Username
         // Si ninguno existe, lanzamos la excepción
         Usuario usuario = usuarioRepository.findByEmail(identifier)
-                .orElseGet(() -> usuarioRepository.findByNombreUsuario(identifier) // <--- Cambiado aquí
+                .orElseGet(() -> usuarioRepository.findByNombreUsuario(identifier)
                 .orElseThrow(() -> new UsernameNotFoundException("No se encontró usuario con: " + identifier)));
 
         // Devolvemos el usuario para que Spring compare la contraseña
