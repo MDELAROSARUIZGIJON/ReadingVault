@@ -1,34 +1,34 @@
 import { Link } from 'react-router-dom';
 import '../assets/css/hero.css';
 
-/**
- * Componente Hero alineado al carril central.
- * El fondo es infinito, pero el contenido respeta el container-custom.
- */
 export default function Hero() {
   return (
     <section className="hero">
       
-      {/* Carril central alineado con toda la web */}
       <div className="container-custom">
         <div className="hero__texto-bloque">
-          <h1 className="hero__titulo">
+          {/* Aparece desde abajo (fade-up) inmediatamente */}
+          <h1 className="hero__titulo" data-aos="fade-up">
             <span className="hero__titulo--verde">Reading</span> 
             <span className="hero__titulo--amarillo">Vault</span>
           </h1>
           
-          <h3 className="hero__slogan">
+          {/* Aparece un poco después (delay de 200ms) */}
+          <h3 className="hero__slogan" data-aos="fade-up" data-aos-delay="200">
             Tu refugio personal para cada libro que formará parte de tu viaje literario
           </h3>
           
-          <Link to="/login" className="hero__boton">
-            ENTRAR
-          </Link>
+          {/* Aparece el último (delay de 400ms) */}
+          <div data-aos="fade-up" data-aos-delay="400">
+            <Link to="/login" className="hero__boton">
+              ENTRAR
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Imagen decorativa fugada al borde derecho */}
-      <div className="hero__img-wrap">
+      {/* La imagen entra desde la derecha con un efecto de fade y un delay de 300ms */}
+      <div className="hero__img-wrap" data-aos="fade-left" data-aos-delay="300">
         <picture>
           <img 
             src="/img/libros-landing.jpg" 

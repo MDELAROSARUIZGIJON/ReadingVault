@@ -1,0 +1,114 @@
+/* src/assets/css/servicios.css */
+
+.servicios {
+    background-color: var(--color-azul-footer);
+    padding: 100px 0;
+    width: 100%;
+    color: var(--text-body);
+}
+
+.servicios__header {
+    margin-bottom: 60px;
+}
+
+.servicios__main-titulo {
+    font-family: var(--font-titulos);
+    font-size: 2.8rem;
+    color: var(--color-verde-oscuro);
+    font-weight: 700;
+}
+
+.servicios__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 100px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 40px;
+    /* Importante para que el brillo no se corte al aparecer */
+    overflow: visible;
+}
+
+/* --- ANIMACIÓN DE ENTRADA LENTA --- */
+@keyframes aparecerDespacio {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.servicios__card {
+    background-color: white;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    position: relative;
+    border: none;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+
+    /* SOMBRAS BLANCAS PERMANENTES */
+    box-shadow:
+        0 0 20px rgba(255, 255, 255, 0.5),
+        0 0 40px rgba(255, 255, 255, 0.4),
+        0 0 80px rgba(255, 255, 255, 0.3);
+
+    /* Animación de entrada: 2.5s para que sea muy notable */
+    animation: aparecerDespacio 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+
+    /* Transición para el 3D del ratón */
+    transition: transform 0.15s ease-out, box-shadow 0.3s ease !important;
+}
+
+.servicios__card:hover {
+    transform: translateY(-10px) scale(1.02);
+
+    box-shadow:
+        0 0 25px rgba(226, 176, 92, 0.7),
+        0 0 50px rgba(243, 198, 111, 0.5),
+        0 0 90px rgba(184, 134, 11, 0.3);
+    
+    border-color: rgba(226, 176, 92, 0.8);
+}
+
+/* --- ICONOS Y TEXTO --- */
+.card__icono-container {
+    width: 80px;
+    height: 80px;
+    background-color: var(--color-amarillo);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px auto;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card__icono-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.card__titulo {
+    font-family: var(--font-titulos);
+    font-size: 1.6rem;
+    color: var(--color-marron-oscuro);
+    margin-bottom: 15px;
+}
+
+.card__descripcion {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-marron-medio);
+}
+
+@media (max-width: 768px) {
+    .servicios__grid { grid-template-columns: 1fr; }
+    .servicios__main-titulo { font-size: 2.2rem; }
+}
