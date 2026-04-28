@@ -57,3 +57,64 @@
     margin-bottom: 1.5rem;
     color: var(--text-titulos);
 }
+
+/* =========================================
+   ESTILOS PARA EL MODAL DE RECORTE (AVATAR EDITOR)
+   ========================================= */
+
+/* 1. El fondo oscuro que cubre toda la pantalla */
+.crop-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw; /* Todo el ancho de la ventana */
+    height: 100vh; /* Todo el alto de la ventana */
+    background-color: rgba(0, 0, 0, 0.75); /* Negro semi-transparente */
+    
+    /* Centrado absoluto del contenido */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Capa superior a todo (Header, Footer, etc.) */
+    z-index: 99999; 
+    
+    /* Efecto de desenfoque en el fondo para estilizar */
+    backdrop-filter: blur(4px); 
+    
+    /* Animación de entrada suave */
+    animation: fadeInModal 0.3s ease-out;
+}
+
+/* La tarjeta blanca centrada que contiene el editor */
+.crop-modal-content {
+    background-color: #ffffff;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    max-width: 90%; /* Responsive en móviles */
+    width: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Estilos para el canvas (el lienzo donde se arrastra la foto) */
+.editor-wrapper canvas {
+    border-radius: 10px;
+
+    cursor: grab;
+}
+
+.editor-wrapper canvas:active {
+    cursor: grabbing;
+}
+
+/* Estilos para el input range (Zoom) */
+.zoom-control input[type=range] {
+    cursor: pointer;
+}
+
+/* Animación de entrada */
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}

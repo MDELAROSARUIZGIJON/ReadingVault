@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import '../assets/css/hero.css';
 
 export default function Hero() {
+  // Comprobamos la sesión en el localStorage
+  const estaLogueado = !!localStorage.getItem("usuario");
+
   return (
     <section className="hero">
       
@@ -18,16 +21,16 @@ export default function Hero() {
             Tu refugio personal para cada libro que formará parte de tu viaje literario
           </h3>
           
-          {/* Aparece el último (delay de 400ms) */}
+          {/* a /home si logueado, a /login si no */}
           <div data-aos="fade-up" data-aos-delay="400">
-            <Link to="/login" className="hero__boton">
+            <Link to={estaLogueado ? "/home" : "/login"} className="hero__boton">
               ENTRAR
             </Link>
           </div>
         </div>
       </div>
 
-      {/* La imagen entra desde la derecha con un efecto de fade y un delay de 300ms */}
+      {/* La imagen entra desde la derecha con un efecto de fade */}
       <div className="hero__img-wrap" data-aos="fade-left" data-aos-delay="300">
         <picture>
           <img 

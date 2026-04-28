@@ -1,6 +1,7 @@
-import React, { useEffect } from "react"; // Añadido useEffect
+import React, { useEffect } from "react"; // React y hooks
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ScrollToTop from './components/ScrollToTop';
+import BotonSubir from './components/BotonSubir'; // Importamos el botón visual
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -10,11 +11,11 @@ import 'aos/dist/aos.css';
 
 import "./App.css";
 
-// Importación de componentes
+// Componentes globales
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-// Importación de páginas
+// Páginas
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
@@ -25,6 +26,7 @@ import AjustesCuenta from "./pages/AjustesCuenta";
 
 
 function App() {
+  // Inicializa las animaciones
   useEffect(() => {
     AOS.init({
       duration: 1000, 
@@ -35,7 +37,9 @@ function App() {
 
   return (
     <Router>
+      {/* Resetea el scroll al cambiar de página */}
       <ScrollToTop />
+      
       <Header />
 
       <main className="main-content">
@@ -51,6 +55,9 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Botón flotante para volver arriba (aparece con scroll) */}
+      <BotonSubir />
     </Router>
   );
 }

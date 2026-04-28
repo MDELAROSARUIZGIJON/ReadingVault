@@ -1,22 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import "../assets/css/header.css";
 
-/**
- * Componente Navbar compacto y alineado.
- * Utiliza variables globales para colores y tipografía.
- */
+// Componente Navbar
 export default function Header() {
   const navigate = useNavigate();
   
-  // Comprobamos si hay un usuario en el localStorage
+  // Verifica sesión
   const usuarioSesion = JSON.parse(localStorage.getItem("usuario"));
-  const estaLogueado = !!usuarioSesion; // true si existe, false si no
+  const estaLogueado = !!usuarioSesion; 
 
-  // Función para cerrar sesión
+  // Cierra sesión
   const handleLogout = () => {
-    localStorage.clear(); // Borra token y usuario
-    navigate("/login");    // Redirige al login
-    window.location.reload(); // Forzamos recarga para limpiar estados globales
+    localStorage.clear(); 
+    navigate("/login");    
+    window.location.reload(); 
   };
 
   const FOTO_DEFAULT = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -24,7 +21,7 @@ export default function Header() {
   return (
     <nav className="navbar-custom">
       <div className="container d-flex justify-content-between align-items-center">
-        {/* LOGO Y NOMBRE A LA IZQUIERDA */}
+        {/* LOGO: A la landing */}
         <Link to="/" className="navbar-custom__brand">
           <div className="navbar-custom__logo-circle">
             <img
@@ -36,33 +33,37 @@ export default function Header() {
           <h3><span className="navbar-custom__brand--reading">Reading</span><span className="navbar-custom__brand--vault">Vault</span></h3>
         </Link>
 
-        {/* MENÚ DE NAVEGACIÓN Y ACCESO */}
+        {/* MENÚ */}
         <div className="navbar-custom__menu d-flex align-items-center gap-4">
-          <Link to="/" className="navbar-custom__link">
+          
+          {/* Home dinámico */}
+          <Link to={estaLogueado ? "/home" : "/login"} className="navbar-custom__link">
             Home
           </Link>
+          
           <Link to="/comunidad" className="navbar-custom__link">
             Comunidad
           </Link>
           <Link to="/buscador" className="navbar-custom__link">
             Explorar
           </Link>
-          <Link to="/nosotros" className="navbar-custom__link">
+          
+          {/* Enlace ancla a la sección Nosotros en la Landing */}
+          <Link to="/#nosotros" className="navbar-custom__link">
             Nosotros
           </Link>
 
           <div className="navbar-custom__divider"></div>
 
-          {/* LÓGICA CONDICIONAL: SI NO ESTÁ LOGUEADO */}
+          {/* SIN LOGUEAR */}
           {!estaLogueado ? (
             <>
               <Link to="/registro" className="navbar-custom__link">Registro</Link>
               <Link to="/login" className="navbar-custom__auth-btn">Log In</Link>
             </>
           ) : (
-            /* LÓGICA CONDICIONAL: SI ESTÁ LOGUEADO */
+            /* LOGUEADO */
             <div className="d-flex align-items-center gap-3">
-              {/* Link al Perfil con su foto pequeña */}
               <Link to="/perfilUsuario" className="navbar-custom__link d-flex align-items-center gap-2">
                 <img 
                   src={usuarioSesion.fotoPerfil || FOTO_DEFAULT} 
@@ -72,11 +73,9 @@ export default function Header() {
                 Mi perfil
               </Link>
 
-              {/* Botón de Log Out */}
               <button 
                 onClick={handleLogout} 
                 className="navbar-custom__auth-btn"
-                
               >
                 Log Out
               </button>
