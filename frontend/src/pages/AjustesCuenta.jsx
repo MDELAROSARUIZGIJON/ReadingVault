@@ -1,42 +1,39 @@
-import { useState, useEffect } from "react"; // Añadido useEffect
+import { useState, useEffect } from "react"; 
 import EditarPerfilForm from "../components/EditarPerfilForm";
 import AjustesPrivacidad from "../components/AjustesPrivacidad"; 
+// 1. Importa el nuevo componente
+import AjustesGeneros from "../components/AjustesGeneros"; 
 
 export default function AjustesCuenta() {
   const [pestañaActiva, setPestañaActiva] = useState("perfil");
-  const [usuario, setUsuario] = useState(null); // Estado para guardar los datos de la DB
+  const [usuario, setUsuario] = useState(null); 
 
   useEffect(() => {
-    // 1. Sacamos los datos de la sesión para saber el ID
+    // Saca ID de sesión
     const sesion = localStorage.getItem("usuario");
     
     if (sesion) {
       const userObj = JSON.parse(sesion);
       const token = localStorage.getItem("token");
 
-      // 2. Llamamos al backend para traer los datos REALES y actualizados
+      // Petición al backend
       fetch(`http://localhost:8080/api/usuarios/${userObj.idUsuario}`, {
-        headers: {
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
-      .then(data => {
-        setUsuario(data); // <--- Aquí guardamos los datos en el estado
-      })
+      .then(data => setUsuario(data))
       .catch(err => console.error("Error cargando ajustes:", err));
     }
   }, []);
 
-  // Si aún no han llegado los datos, mostramos un cargando
   if (!usuario) return <div className="container p-5">Cargando tus ajustes...</div>;
 
   return (
     <main className="container-custom py-5">
       <h1 className="mb-4" style={{ fontFamily: 'var(--font-titulos)' }}>Ajustes de la cuenta</h1>
       
-      {/* Sistema de pestañas igual que lo tenías... */}
       <ul className="nav nav-tabs border-0 mb-4" role="tablist">
+        {/* Pestaña Perfil */}
         <li className="nav-item">
           <button 
             className={`nav-link text-dark ${pestañaActiva === 'perfil' ? 'active fw-bold' : ''}`}
@@ -46,20 +43,34 @@ export default function AjustesCuenta() {
             Perfil
           </button>
         </li>
+
+        {/* Pestaña Géneros */}
+        <li className="nav-item">
+          <button 
+            className={`nav-link text-dark ${pestañaActiva === 'generos' ? 'active fw-bold' : ''}`}
+            style={{ border: 'none', backgroundColor: 'transparent', borderBottom: pestañaActiva === 'generos' ? '2px solid var(--accent)' : 'none' }}
+            onClick={() => setPestañaActiva("generos")}
+          >
+            Géneros
+          </button>
+        </li>
+
+        {/* Pestaña Cuenta */}
         <li className="nav-item">
           <button 
             className={`nav-link text-dark ${pestañaActiva === 'cuenta' ? 'active fw-bold' : ''}`}
             style={{ border: 'none', backgroundColor: 'transparent', borderBottom: pestañaActiva === 'cuenta' ? '2px solid var(--accent)' : 'none' }}
             onClick={() => setPestañaActiva("cuenta")}
           >
-            Cuenta
+            Privacidad
           </button>
         </li>
       </ul>
 
-      {/* AQUÍ ESTÁ EL CAMBIO CLAVE: Pasar el objeto usuario al hijo */}
+      {/* Renderizado condicional de componentes */}
       <div className="perfil-card p-4">
         {pestañaActiva === "perfil" && <EditarPerfilForm user={usuario} />}
+        {pestañaActiva === "generos" && <AjustesGeneros user={usuario} />}
         {pestañaActiva === "cuenta" && <AjustesPrivacidad user={usuario} />}
       </div>
     </main>

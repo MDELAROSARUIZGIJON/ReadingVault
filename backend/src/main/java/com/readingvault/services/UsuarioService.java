@@ -2,12 +2,14 @@ package com.readingvault.services;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.readingvault.models.Estanteria; // IMPORTANTE
+import com.readingvault.models.Estanteria;
+import com.readingvault.models.Genero;
 import com.readingvault.models.Usuario;
 import com.readingvault.repositories.UsuarioRepository;
 
@@ -20,16 +22,16 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private EstanteriaService estanteriaService;
 
     @Autowired
-    private EstanteriaService estanteriaService;
+    private PasswordEncoder passwordEncoder;
 
     public Usuario guardarSinEncriptar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
 
-    // busquedas
+    // Búsquedas
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
@@ -45,22 +47,19 @@ public class UsuarioService {
     public Usuario actualizarPerfil(Long id, Usuario datosNuevos) throws Exception {
         Usuario userExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new Exception("Usuario no encontrado"));
-
-        // Validar que el nuevo username no lo tenga OTRO usuario
+        // Validaciones de unicidad
         if (!userExistente.getNombreUsuario().equals(datosNuevos.getNombreUsuario())) {
             if (usuarioRepository.existsByNombreUsuario(datosNuevos.getNombreUsuario())) {
                 throw new Exception("El nombre de usuario ya está en uso");
             }
         }
-
         // Validar que el nuevo email no lo tenga otro usuario
         if (!userExistente.getEmail().equals(datosNuevos.getEmail())) {
             if (usuarioRepository.existsByEmail(datosNuevos.getEmail())) {
                 throw new Exception("El correo ya está registrado");
             }
         }
-
-        // Gestión de contraseña: Solo se encripta si el usuario escribe una nueva
+        // Encriptar pass si se cambia
         if (datosNuevos.getPassword() != null && !datosNuevos.getPassword().trim().isEmpty()) {
             userExistente.setPassword(passwordEncoder.encode(datosNuevos.getPassword()));
         }
@@ -74,11 +73,23 @@ public class UsuarioService {
         userExistente.setNombreUsuario(datosNuevos.getNombreUsuario());
         userExistente.setEmail(datosNuevos.getEmail());
 
-        if (datosNuevos.getGenero() != null) {
-            userExistente.setGenero(datosNuevos.getGenero());
+        // Actualizar géneros favoritos (ahora es una colección)
+        if (datosNuevos.getGenerosFavoritos() != null) {
+            userExistente.setGenerosFavoritos(datosNuevos.getGenerosFavoritos());
         }
 
         return usuarioRepository.save(userExistente);
+    }
+
+    @Transactional
+    public Usuario actualizarGenerosFavoritos(Long id, Set<Genero> nuevosGeneros) throws Exception {
+        Usuario u = usuarioRepository.findById(id)
+                .orElseThrow(() -> new Exception("Usuario no encontrado"));
+        
+        // Al setear el nuevo conjunto, JPA borra lo anterior en la tabla intermedia e inserta lo nuevo
+        u.setGenerosFavoritos(nuevosGeneros);
+        
+        return usuarioRepository.save(u);
     }
 
     public Usuario actualizarPrivacidad(Long id, Map<String, String> ajustes) throws Exception {

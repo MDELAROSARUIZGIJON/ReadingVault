@@ -133,3 +133,27 @@
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
 }
+
+/* ESTILOS PARA LOS GÉNEROS FAVORITOS */
+
+.btn-genero-inactivo {
+    background-color: transparent;
+    color: var(--color-marron-oscuro);
+    border-color: #ced4da !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-genero-inactivo:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: #adb5bd !important;
+}
+
+/* Botón seleccionado (Activo) */
+.btn-genero-activo {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    transition: all 0.2s ease-in-out;
+}
