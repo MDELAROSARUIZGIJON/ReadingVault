@@ -3,9 +3,11 @@ package com.readingvault.controllers;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,19 +16,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.readingvault.dto.LibroExternoDTO;
 import com.readingvault.services.EstanteriaService;
-import com.readingvault.services.LibroEstanteriaService;
-import com.readingvault.services.LibroService;
 
 @RestController
 @RequestMapping("/api/bibliotecas")
 @CrossOrigin(origins = "http://localhost:5173")
 public class BibliotecaController {
-    @Autowired
-    private LibroService libroService;
+
     @Autowired
     private EstanteriaService estanteriaService;
-    @Autowired
-    private LibroEstanteriaService libroEstanteriaService;
+
+
+    @GetMapping("/estado")
+    public ResponseEntity<?> obtenerEstadoLibro(
+            @RequestParam Long idUsuario, 
+            @RequestParam String titulo, 
+            @RequestParam String autor) {
+        try {
+            return estanteriaService.obtenerNombreEstanteriaDelLibro(idUsuario, titulo, autor)
+                    .map(nombre -> ResponseEntity.ok(Map.of("nombreEstanteria", nombre)))
+                    .orElse(ResponseEntity.ok(Map.of("nombreEstanteria", "")));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
     @PostMapping("/add")
     public ResponseEntity<?> añadirLibro(@RequestBody Map<String, Object> payload) {

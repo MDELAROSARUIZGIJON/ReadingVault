@@ -150,7 +150,9 @@ const BuscadorLibros = () => {
 
             <div className="libros-grid">
               {libros.length > 0 ? (
-                libros.map((libro, index) => <LibroCard key={index} libro={libro} />)
+                libros.map((libro) => (
+                  <LibroCard key={libro.id || `${libro.titulo}-${libro.autor}`} libro={libro} />
+                ))
               ) : (
                 <p className="libros-grid__mensaje">Usa el buscador para encontrar tus libros favoritos.</p>
               )}

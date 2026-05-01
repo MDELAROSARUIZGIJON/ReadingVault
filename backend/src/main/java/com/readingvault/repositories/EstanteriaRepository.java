@@ -10,4 +10,5 @@ import com.readingvault.models.Estanteria;
 @Repository
 public interface EstanteriaRepository extends JpaRepository<Estanteria, Long> {
     Optional<Estanteria> findByUsuario_IdUsuarioAndNombre(Long idUsuario, String nombre);
+    
 }

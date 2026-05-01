@@ -21,16 +21,34 @@ public class LibroExternoDTO {
     // Número de páginas
     private int numberOfPages;
 
-    // URL de la imagen
+    // URL de la imagen de portada
     private String coverId;
 
-    // Valoración media de Google Books
+    // Valoración media
     private double averageRating;
 
+    // Descripción completa del libro
+    private String description;
+    
+    // Fecha de publicación
+    private String fechaPublicacion;
+    
+    // ISBN
+    private String isbn;
+
+    // Campo auxiliar para facilitar el guardado
     private String nombrePrimerAutor;
 
+    /**
+     * Lógica para obtener siempre un autor válido al persistir el libro.
+     */
     public String getNombrePrimerAutor() {
-        return (authorNames != null && !authorNames.isEmpty()) ? authorNames.get(0) : "Autor desconocido";
+        if (nombrePrimerAutor != null && !nombrePrimerAutor.isEmpty()) {
+            return nombrePrimerAutor;
+        }
+        return (authorNames != null && !authorNames.isEmpty()) 
+                ? authorNames.get(0) 
+                : "Autor desconocido";
     }
 
     public void setNombrePrimerAutor(String nombrePrimerAutor) {
