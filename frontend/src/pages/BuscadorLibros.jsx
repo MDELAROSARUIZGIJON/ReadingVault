@@ -1,18 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LibroCard from "../components/LibroCard";
 import SidebarGeneros from "../components/SidebarGeneros";
 import "../assets/css/buscador.css";
-
-// Mapeo géneros
-const mapaGeneros = {
-  "Arte": "art", "Autoayuda": "self-help", "Biografía": "biography",
-  "Ciencia Ficción": "science fiction", "Clásicos": "classics", "Crimen": "crime",
-  "Fantasía": "fantasy", "Ficción": "fiction", "Historia": "history",
-  "Comedia": "humor", "Infantil": "juvenile fiction", "Misterio": "mystery",
-  "Novela": "fiction", "Paranormal": "body, mind & spirit", "Poesía": "poetry",
-  "Romance": "romance", "Suspense": "suspense", "Terror": "horror", "Thriller": "thriller"
-};
 
 const BuscadorLibros = () => {
   const [libros, setLibros] = useState([]);
@@ -20,15 +10,34 @@ const BuscadorLibros = () => {
   const [generoActivo, setGeneroActivo] = useState(""); 
   const [orden, setOrden] = useState("relevance"); 
   const [pagina, setPagina] = useState(1); 
+  const [tusGeneros, setTusGeneros] = useState([]); 
+  
+  //  Estado para la lista maestra de géneros de la BD
+  const [listaMaestraGeneros, setListaMaestraGeneros] = useState([]);
 
-  // Simula géneros vacíos por usuario no logueado
-  const tusGeneros = []; 
+  useEffect(() => {
+    //  Cargar géneros del usuario para la sección "Mis Favoritos"
+    const sesion = localStorage.getItem("usuario");
+    if (sesion) {
+      const userObj = JSON.parse(sesion);
+      if (userObj.generosFavoritos) {
+        setTusGeneros(userObj.generosFavoritos.map(g => g.nombre));
+      }
+    }
 
-  // Petición a API y ordenación
-  const obtenerLibros = async (busqueda, genero, ordenSeleccionado, paginaActual) => {
+    //  Cargar todos los géneros disponibles desde la BD
+    axios.get("http://localhost:8080/api/generos")
+      .then(res => setListaMaestraGeneros(res.data))
+      .catch(err => console.error("Error cargando géneros:", err));
+  }, []);
+
+  const obtenerLibros = async (busqueda, generoNombre, ordenSeleccionado, paginaActual) => {
     let query = "";
-    if (genero) {
-      query = `subject:${mapaGeneros[genero] || genero}`;
+    
+    if (generoNombre) {
+      const generoObj = listaMaestraGeneros.find(g => g.nombre === generoNombre);
+      const terminoBusqueda = generoObj ? generoObj.nombreIngles : generoNombre;
+      query = `subject:${terminoBusqueda}`;
     } else if (busqueda) {
       query = busqueda.trim();
     }
@@ -37,7 +46,7 @@ const BuscadorLibros = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/libros/buscar?q=${query}&orderBy=relevance&pagina=${paginaActual}`
+        `http://localhost:8080/api/libros/buscar?q=${query}&orderBy=${ordenSeleccionado === 'rating' ? 'relevance' : ordenSeleccionado}&pagina=${paginaActual}`
       );
       
       let resultados = response.data;
@@ -50,7 +59,6 @@ const BuscadorLibros = () => {
     }
   };
 
-  // Eventos de búsqueda
   const ejecutarBusqueda = (e) => {
     e.preventDefault();
     setGeneroActivo(""); 
@@ -72,7 +80,6 @@ const BuscadorLibros = () => {
     obtenerLibros(textoBusqueda, generoActivo, nuevoOrden, 1);
   };
 
-  // Navegación de páginas
   const cambiarPagina = (nuevaPagina) => {
     setPagina(nuevaPagina);
     obtenerLibros(textoBusqueda, generoActivo, orden, nuevaPagina);
@@ -105,8 +112,8 @@ const BuscadorLibros = () => {
         <div className="row">
           <aside className="col-md-3">
             <SidebarGeneros
-              tusGeneros={tusGeneros} // Pasamos el array vacío
-              todosLosGeneros={Object.keys(mapaGeneros)}
+              tusGeneros={tusGeneros} 
+              todosLosGeneros={listaMaestraGeneros.map(g => g.nombre)}
               onGeneroClick={buscarPorGenero}
               generoActivo={generoActivo}
             />
@@ -117,6 +124,7 @@ const BuscadorLibros = () => {
               <h2 className="header-buscador__titulo">Encuentra tu próxima lectura</h2>
               <p className="header-buscador__subtitulo">Busca por título, autor o explora nuestros géneros</p>
             </div>
+            
             <div className="search-bar">
               <form className="search-bar__form" onSubmit={ejecutarBusqueda}>
                 <div className="search-bar__icon"><i className="bi bi-search"></i></div>

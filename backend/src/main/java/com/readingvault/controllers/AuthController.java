@@ -67,11 +67,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
 
-        // 1. ACTUALIZAR CONEXIÓN (Sin encriptar de nuevo la pass)
         userDb.setUltimaConexion(LocalDateTime.now());
         usuarioService.guardarSinEncriptar(userDb); 
 
-        // 2. CONSTRUIR RESPUESTA SEGURA (Sin password)
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
         
@@ -81,7 +79,6 @@ public class AuthController {
         userData.put("email", userDb.getEmail());
         userData.put("fotoPerfil", userDb.getFotoPerfil());
         userData.put("rol", userDb.getRol());
-        // Añadimos estos para que el perfil no salga vacío al loguear
         userData.put("localidad", userDb.getLocalidad());
         userData.put("biografia", userDb.getBiografia());
         

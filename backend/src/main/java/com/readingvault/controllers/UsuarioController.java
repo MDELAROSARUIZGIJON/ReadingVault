@@ -1,7 +1,10 @@
 package com.readingvault.controllers;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.readingvault.models.Genero;
 import com.readingvault.models.Usuario;
+import com.readingvault.repositories.GeneroRepository;
 import com.readingvault.services.CloudinaryService;
 import com.readingvault.services.UsuarioService;
 
@@ -32,6 +37,9 @@ public class UsuarioController {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private GeneroRepository generoRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtenerPerfil(@PathVariable Long id) {
@@ -48,10 +56,32 @@ public class UsuarioController {
             throws Exception {
         Usuario actualizado = usuarioService.actualizarPerfil(id, usuarioDatos);
         if (actualizado != null) {
-            actualizado.setPassword(null); // Seguridad
+            actualizado.setPassword(null);
             return ResponseEntity.ok(actualizado);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+    }
+
+    @PutMapping("/{id}/generos")
+    public ResponseEntity<?> actualizarGeneros(@PathVariable Long id, @RequestBody List<String> nombresGeneros) {
+        try {
+            // Convertimos nombres a entidades existentes en la BD
+            Set<Genero> generos = nombresGeneros.stream()
+                .map(nombre -> generoRepository.findByNombre(nombre)
+                    .orElseThrow(() -> new RuntimeException("El género '" + nombre + "' no existe en la base de datos")))
+                .collect(Collectors.toSet());
+
+            // El servicio se encarga de la persistencia
+            Usuario usuarioActualizado = usuarioService.actualizarGenerosFavoritos(id, generos);
+            
+            // Limpiar password por seguridad
+            usuarioActualizado.setPassword(null); 
+            
+            return ResponseEntity.ok(usuarioActualizado);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar géneros: " + e.getMessage());
         }
     }
 
@@ -61,10 +91,10 @@ public class UsuarioController {
             Usuario usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
 
-            // 1. Subir a Cloudinary y obtener URL
+            // Subir a Cloudinary y obtener URL
             String urlNube = cloudinaryService.subirFoto(archivo);
 
-            // 2. Guardar esa URL directamente en la base de datos
+            // Guardar esa URL directamente en la base de datos
             usuario.setFotoPerfil(urlNube);
             usuarioService.guardarSinEncriptar(usuario);
 
@@ -80,12 +110,11 @@ public class UsuarioController {
             Usuario usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
 
-            // 1. Ponemos la URL por defecto (la misma que usas en el frontend como
-            // fallback)
+            // Ponemos la URL por defecto (la misma que usas en el frontend como fallback)
             String fotoDefecto = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
             usuario.setFotoPerfil(fotoDefecto);
 
-            // 2. Guardamos el cambio
+            // Guardamos el cambio
             usuarioService.guardarSinEncriptar(usuario);
 
             return ResponseEntity.ok(Map.of("fotoPerfil", fotoDefecto));
@@ -100,14 +129,14 @@ public class UsuarioController {
             Usuario usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
 
-            // 1. Borrar la foto de Cloudinary si no es la por defecto
+            // Borrar la foto de Cloudinary si no es la por defecto
             String urlFoto = usuario.getFotoPerfil();
             if (urlFoto != null && urlFoto.contains("cloudinary")) {
                 String publicId = cloudinaryService.extraerPublicId(urlFoto);
                 cloudinaryService.eliminarFoto(publicId);
             }
 
-            // 2. Borrar de la base de datos
+            // Borrar de la base de datos
             usuarioService.eliminar(id);
 
             return ResponseEntity.ok(Map.of("mensaje", "Usuario y datos eliminados con éxito"));
