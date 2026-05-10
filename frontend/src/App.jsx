@@ -48,7 +48,7 @@ function App() {
       }
 
       const audio = new Audio('/media/susurro.mp3');
-      audio.volume = 0.6;
+      audio.volume = 0;
       
       audio.play()
         .then(() => {
@@ -131,7 +131,7 @@ function App() {
         return;
       }
 
-      if (Math.random() < 0.003) { // Probabilidad del 0.3%
+      if (Math.random() < 0.05) { // Probabilidad del 0.3%
         e.preventDefault();
         e.stopPropagation();
         
