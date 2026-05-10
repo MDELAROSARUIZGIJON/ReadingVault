@@ -6,10 +6,11 @@ const Reto = () => {
   const [paginasPasadas, setPaginasPasadas] = useState([]);
   const [datosReto, setDatosReto] = useState({
     leidos: 0,
-    objetivo: 20,
+    objetivo: 0,
     paginasTotales: 0,
-    diasSeguidos: 47,
+    diasSeguidos: 0,
   });
+  const [librosPendientes, setLibrosPendientes] = useState([]);
   const [librosLeyendo, setLibrosLeyendo] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [libroSeleccionado, setLibroSeleccionado] = useState(null);
@@ -17,7 +18,6 @@ const Reto = () => {
   const [paso, setPaso] = useState(1);
   const [puntuacion, setPuntuacion] = useState(0);
 
-  // Estados para el Toast
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
   const mostrarNotificacion = (texto, tipo) => {
     setMensaje({ texto, tipo });
@@ -38,6 +38,9 @@ const Reto = () => {
       )
         .then((res) => res.json())
         .then((items) => {
+          // Volvemos a obtener la sesión dentro para asegurar que existe y está fresca
+          const sesionActualizada = JSON.parse(localStorage.getItem("usuario"));
+
           const librosLeidos = items.filter(
             (item) => item.estanteria?.nombre === "Leído",
           );
@@ -49,18 +52,69 @@ const Reto = () => {
             (item) => item.estanteria?.nombre === "Leyendo",
           );
 
-          setLibrosLeyendo(librosActivos);
+          const pendientes = items.filter(
+            (item) => item.estanteria?.nombre === "Pendiente",
+          );
 
+          setLibrosLeyendo(librosActivos);
+          setLibrosPendientes(pendientes);
           setDatosReto((prev) => ({
             ...prev,
             leidos: librosLeidos.length,
             paginasTotales: sumaPaginas,
+            // Usamos la sesión que acabamos de leer
+            objetivo: sesionActualizada?.objetivoLectura || 0,
+            diasSeguidos: sesionActualizada?.rachaActual || 0,
           }));
         })
         .catch((err) => console.error("Error cargando reto:", err));
     }
   }, []);
-  console.log(librosLeyendo);
+
+  const [nuevoObjetivo, setNuevoObjetivo] = useState("");
+
+  const crearRetoAnual = () => {
+    const num = parseInt(nuevoObjetivo);
+    if (isNaN(num) || num <= 0) {
+      mostrarNotificacion("Introduce un número de libros válido", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const sesion = JSON.parse(localStorage.getItem("usuario"));
+
+    // Llamada al backend para guardar el objetivo
+    fetch(
+      `http://localhost:8080/api/usuarios/${sesion.idUsuario}/actualizar-reto`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ objetivoLectura: num }),
+      },
+    )
+      .then((res) => {
+        if (res.ok) {
+          // Actualizamos el localStorage para que al refrescar no salga el 0
+          const sesionActualizada = { ...sesion, objetivoLectura: num };
+          localStorage.setItem("usuario", JSON.stringify(sesionActualizada));
+
+          // Actualizamos el estado para que desaparezca el trofeo y salgan las tarjetas
+          setDatosReto((prev) => ({
+            ...prev,
+            objetivo: num,
+          }));
+
+          mostrarNotificacion("¡Reto anual configurado con éxito!", "success");
+        } else {
+          mostrarNotificacion("No se pudo guardar el reto", "error");
+        }
+      })
+      .catch((err) => console.error("Error al crear reto:", err));
+  };
+
   const finalizarLibro = () => {
     if (libroSeleccionado) {
       setNuevaPagina(libroSeleccionado.libro.paginas);
@@ -68,45 +122,61 @@ const Reto = () => {
     }
   };
 
+  const guardarProgresoParcial = () => {
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:8080/api/bibliotecas/actualizar-progreso`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idLibroEstanteria: libroSeleccionado.id,
+        paginaActual: nuevaPagina,
+      }),
+    }).then((res) => {
+      if (res.ok) {
+        setLibrosLeyendo((prev) =>
+          prev.map((l) =>
+            l.id === libroSeleccionado.id
+              ? { ...l, progresoActual: nuevaPagina }
+              : l,
+          ),
+        );
+        setIsModalOpen(false);
+        mostrarNotificacion("¡Progreso guardado!", "success");
+      }
+    });
+  };
+
   const guardarTodo = () => {
     const token = localStorage.getItem("token");
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
     fetch(`http://localhost:8080/api/bibliotecas/actualizar-estanteria`, {
       method: "PUT",
-      headers: headers,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         idLibroEstanteria: libroSeleccionado.id,
         nuevoNombreEstanteria: "Leído",
       }),
-    })
-      .then((res) => {
-        if (res.ok) {
-          setLibrosLeyendo((prev) =>
-            prev.filter((l) => l.id !== libroSeleccionado.id),
-          );
-          setDatosReto((prev) => ({
-            ...prev,
-            leidos: prev.leidos + 1,
-            paginasTotales:
-              prev.paginasTotales + libroSeleccionado.libro.paginas,
-          }));
-
-          setIsModalOpen(false);
-          setPaso(1);
-          setLibroSeleccionado(null);
-
-          // USAMOS TU NOTIFICACIÓN
-          mostrarNotificacion(
-            "¡Libro completado y añadido a tu reto!",
-            "success",
-          );
-        }
-      })
-      .catch((err) => console.error("Error al guardar:", err));
+    }).then((res) => {
+      if (res.ok) {
+        setLibrosLeyendo((prev) =>
+          prev.filter((l) => l.id !== libroSeleccionado.id),
+        );
+        setDatosReto((prev) => ({
+          ...prev,
+          leidos: prev.leidos + 1,
+          paginasTotales: prev.paginasTotales + libroSeleccionado.libro.paginas,
+        }));
+        setIsModalOpen(false);
+        setPaso(1);
+        setLibroSeleccionado(null);
+        mostrarNotificacion("¡Libro completado!", "success");
+      }
+    });
   };
 
   const manejarPasoPagina = (id) => {
@@ -116,7 +186,6 @@ const Reto = () => {
   };
 
   const reiniciarLibro = () => setPaginasPasadas([]);
-
   const librosRestantes = Math.max(datosReto.objetivo - datosReto.leidos, 0);
   const porcentaje = Math.min(
     (datosReto.leidos / datosReto.objetivo) * 100,
@@ -128,108 +197,190 @@ const Reto = () => {
       <RetoHeader />
 
       <main className="reto-main-content">
-        {/* TARJETA 3 - ESTADÍSTICAS */}
-        <section
-          className={`reto-card ultima-hoja ${paginasPasadas.includes(3) ? "pagina-pasada" : ""}`}
-          style={{ zIndex: 1 }}
-        >
-          <div className="reto-card__title-container">
-            <h3 className="reto-card__title">Estadísticas de lectura</h3>
-          </div>
-          <div className="reto-card__body flex-column align-items-center">
-            <div className="d-flex justify-content-around w-100 mt-5">
-              <div className="text-center">
-                <h4
-                  style={{ color: "var(--color-amarillo)", fontSize: "3rem" }}
-                >
-                  47
-                </h4>
-                <p style={{ fontSize: "1.2rem" }}>Días seguidos</p>
-              </div>
-              <div className="text-center">
-                <h4 style={{ color: "var(--color-salmon)", fontSize: "3rem" }}>
-                  {datosReto.leidos}
-                </h4>
-                <p style={{ fontSize: "1.2rem" }}>Libros leídos</p>
-              </div>
-            </div>
-            <button
-              onClick={reiniciarLibro}
-              className="btn-add-progress"
-              style={{ marginTop: "50px" }}
+        {datosReto.objetivo === 0 ? (
+          /* VISTA CUANDO NO HAY RETO */
+          <section className="reto-setup-card">
+            <div
+              className="reto-card__icon-circle"
+              style={{ width: "100px", height: "100px", fontSize: "3rem" }}
             >
-              Cerrar Libro
-            </button>
-          </div>
-        </section>
+              <i
+                className="bi bi-trophy-fill"
+                style={{ color: "var(--color-amarillo)" }}
+              ></i>
+            </div>
+            <h2 className="text-verde mt-4">
+              ¡Aún no tienes tu reto de lectura anual!
+            </h2>
+            <p className="text-muted">
+              ¿Cuántos libros te propones leer este año?
+            </p>
 
-        {/* TARJETA 2 - PÁGINAS */}
-        <section
-          className={`reto-card ${paginasPasadas.includes(2) ? "pagina-pasada" : ""}`}
-          style={{ zIndex: 2 }}
-          onClick={() => manejarPasoPagina(2)}
-        >
-          <div className="reto-card__title-container">
-            <h3 className="reto-card__title">Páginas leídas en total</h3>
-          </div>
-          <div className="reto-card__body">
-            <div className="reto-card__icon-circle">
-              <i className="bi bi-text-paragraph"></i>
+            <div className="setup-input-group mt-4">
+              <input
+                type="number"
+                className="modal-input-num"
+                value={nuevoObjetivo}
+                onChange={(e) => setNuevoObjetivo(e.target.value)}
+              />
+              <button className="btn-progreso ms-3" onClick={crearRetoAnual}>
+                <span>Empezar Desafío</span>
+              </button>
             </div>
-            <div className="reto-card__data" style={{ flex: 1 }}>
-              <p
-                style={{
-                  fontSize: "1.3rem",
-                  color: "var(--color-verde-oscuro)",
-                  paddingTop: "20px",
-                }}
-              >
-                Has devorado un total de{" "}
-                <strong>{datosReto.paginasTotales} páginas</strong>
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <>
+            {/* TARJETA 3 - ESTADÍSTICAS */}
 
-        {/* TARJETA 1 - PROGRESO */}
-        <section
-          className={`reto-card ${paginasPasadas.includes(1) ? "pagina-pasada" : ""}`}
-          style={{ zIndex: 3 }}
-          onClick={() => manejarPasoPagina(1)}
-        >
-          <div className="reto-card__title-container">
-            <h3 className="reto-card__title">Progreso de tu reto</h3>
-          </div>
-          <div className="reto-card__body">
-            <div className="reto-card__icon-circle">
-              <i className="bi bi-book"></i>
-            </div>
-            <div className="reto-card__data" style={{ flex: 1 }}>
-              <p
-                style={{
-                  fontSize: "1.3rem",
-                  color: "var(--color-verde-oscuro)",
-                  paddingTop: "20px",
-                }}
-              >
-                {librosRestantes > 0 ? (
-                  <>
-                    Te quedan sólo <strong>{librosRestantes} libros</strong>{" "}
-                    para completar el desafío.
-                  </>
-                ) : (
-                  <strong>¡Felicidades! Has completado tu reto anual.</strong>
-                )}
-              </p>
-              <div className="reto-progress-bar">
-                <div
-                  className="reto-progress-bar__fill"
-                  style={{ width: `${porcentaje}%` }}
-                ></div>
+            <section
+              className={`reto-card ultima-hoja ${paginasPasadas.includes(3) ? "pagina-pasada" : ""}`}
+              style={{ zIndex: 1 }}
+            >
+              <div className="reto-card__title-container">
+                <h3 className="reto-card__title">Estado de tu Vault</h3>
               </div>
-            </div>
-          </div>
-        </section>
+
+              <div className="reto-card__body flex-column align-items-center">
+                {/* Mini-grid de estadísticas */}
+                <div className="stats-mini-grid">
+                  <div className="stat-item">
+                    <span
+                      className="stat-value"
+                      style={{ color: "var(--color-amarillo)" }}
+                    >
+                      {datosReto.diasSeguidos}🔥
+                    </span>
+                    <span className="stat-label">Días racha</span>
+                  </div>
+                  <div className="stat-item">
+                    <span
+                      className="stat-value"
+                      style={{ color: "var(--color-salmon)" }}
+                    >
+                      {datosReto.leidos}
+                    </span>
+                    <span className="stat-label">Leídos</span>
+                  </div>
+                  <div className="stat-item">
+                    
+                    <span className="stat-value">
+                      {librosPendientes.length}
+                    </span>
+                    <span className="stat-label">Pendientes</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">{librosLeyendo.length}</span>
+                    <span className="stat-label">Leyendo</span>
+                  </div>
+                </div>
+
+                {/* BOTÓN REINICIAR (Cerrar Libro) */}
+                <button
+                  onClick={reiniciarLibro}
+                  className="btn-add-progress"
+                  style={{ marginTop: "30px", width: "80%" }}
+                >
+                  Cerrar Libro
+                </button>
+              </div>
+            </section>
+
+            {/* TARJETA 2 - PÁGINAS */}
+            <section
+              className={`reto-card ${paginasPasadas.includes(2) ? "pagina-pasada" : ""}`}
+              style={{ zIndex: 2 }}
+              onClick={() => manejarPasoPagina(2)}
+            >
+              <div className="reto-card__title-container">
+                <h3 className="reto-card__title">Análisis de Lectura</h3>
+              </div>
+
+              <div className="reto-card__body">
+                <div
+                  className="reto-card__data"
+                  style={{ flex: 1, marginLeft: "30px" }}
+                >
+                  <div className="stats-mini-grid">
+                    {/* Fila superior: Ocupa las dos columnas (1 / -1) */}
+                    <div
+                      className="stat-item"
+                      style={{ gridColumn: "1 / -1", padding: "20px" }}
+                    >
+                      <span
+                        className="stat-value"
+                        style={{
+                          fontSize: "2.5rem",
+                          color: "var(--color-verde-oscuro)",
+                        }}
+                      >
+                        {datosReto.paginasTotales}
+                      </span>
+                      <span className="stat-label">Páginas totales leídas</span>
+                    </div>
+
+                    {/* Fila inferior: Dos columnas al 50% */}
+                    <div className="stat-item">
+                      <span className="stat-value-sm">
+                        {datosReto.leidos > 0
+                          ? Math.round(
+                              datosReto.paginasTotales / datosReto.leidos,
+                            )
+                          : 0}
+                      </span>
+                      <span className="stat-label-sm">
+                        Media de páginas por libro
+                      </span>
+                    </div>
+
+                    <div className="stat-item">
+                      <span className="stat-value-sm">
+                        {Math.round(datosReto.paginasTotales / 30)}
+                      </span>
+                      <span className="stat-label-sm">
+                        Media de páginas leídas por día
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* TARJETA 1 - PROGRESO */}
+            <section
+              className={`reto-card ${paginasPasadas.includes(1) ? "pagina-pasada" : ""}`}
+              style={{ zIndex: 3 }}
+              onClick={() => manejarPasoPagina(1)}
+            >
+              <div className="reto-card__title-container">
+                <h3 className="reto-card__title">Progreso de tu reto</h3>
+              </div>
+              <div className="reto-card__body">
+                <div className="reto-card__icon-circle">
+                  <i className="bi bi-trophy"></i>
+                </div>
+                <div className="reto-card__data">
+                  <p className="texto-principal">
+                    ¡Has leído{" "}
+                    <strong>
+                      {datosReto.leidos} de {datosReto.objetivo}
+                    </strong>{" "}
+                    libros!
+                  </p>
+                  <div className="reto-progress-bar">
+                    <div
+                      className="reto-progress-bar__fill"
+                      style={{ width: `${porcentaje}%` }}
+                    ></div>
+                  </div>
+                  <p className="texto-secundario" style={{ marginTop: "20px" }}>
+                    Te quedan sólo <strong>{librosRestantes} libros</strong>{" "}
+                    para el desafío.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
       <section className="reto-banner">
@@ -252,6 +403,7 @@ const Reto = () => {
         </div>
       </section>
 
+      {/* MODAL */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-progreso-nuevo">
@@ -263,18 +415,12 @@ const Reto = () => {
                     className="modal-select"
                     value={libroSeleccionado?.id || ""}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      if (!val) {
-                        setLibroSeleccionado(null);
-                        return;
-                      }
-                      // Buscamos con == para evitar problemas de tipos (string vs number)
-                      const lib = librosLeyendo.find((l) => l.id == val);
-
+                      const lib = librosLeyendo.find(
+                        (l) => String(l.id) === String(e.target.value),
+                      );
                       if (lib) {
                         setLibroSeleccionado(lib);
-                        setNuevaPagina(0);
-                        setPaso(1);
+                        setNuevaPagina(lib.progresoActual || 0);
                       }
                     }}
                   >
@@ -285,6 +431,7 @@ const Reto = () => {
                       </option>
                     ))}
                   </select>
+
                   {libroSeleccionado && (
                     <div className="modal-inputs-wrapper">
                       <div className="input-group-custom">
@@ -292,23 +439,14 @@ const Reto = () => {
                           type="number"
                           className="modal-input-num"
                           value={nuevaPagina}
-                          placeholder="0"
                           onChange={(e) => {
                             const val = e.target.value;
-
                             if (val === "") {
                               setNuevaPagina("");
                               return;
                             }
-
                             const num = parseInt(val);
-
-                            if (
-                              !isNaN(num) &&
-                              num <= libroSeleccionado.libro.paginas
-                            ) {
-                              setNuevaPagina(num);
-                            }
+                            if (!isNaN(num)) setNuevaPagina(num);
                           }}
                         />
                         <span className="separador">de</span>
@@ -335,7 +473,11 @@ const Reto = () => {
                   </button>
                   <button
                     className="btn-guardar-progreso"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => {
+                      if (nuevaPagina >= libroSeleccionado.libro.paginas)
+                        finalizarLibro();
+                      else guardarProgresoParcial();
+                    }}
                   >
                     Guardar
                   </button>
@@ -369,13 +511,12 @@ const Reto = () => {
         </div>
       )}
 
+      {/* TOAST */}
       {mensaje.texto && (
         <div className={`vault-toast vault-toast--${mensaje.tipo}`}>
-          {mensaje.tipo === "success" ? (
-            <i className="bi bi-check-circle-fill me-2"></i>
-          ) : (
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-          )}
+          <i
+            className={`bi ${mensaje.tipo === "success" ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"} me-2`}
+          ></i>
           {mensaje.texto}
         </div>
       )}

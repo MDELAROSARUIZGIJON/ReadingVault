@@ -28,6 +28,7 @@ public class LibroEstanteria {
     private Libro libro;
 
     private LocalDate fechaAgregado;
+    private Integer progresoActual = 0;
 
     // se ejecuta automáticamente antes de guardar en la DB
     @PrePersist

@@ -1,5 +1,6 @@
 package com.readingvault.services;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -85,10 +86,11 @@ public class UsuarioService {
     public Usuario actualizarGenerosFavoritos(Long id, Set<Genero> nuevosGeneros) throws Exception {
         Usuario u = usuarioRepository.findById(id)
                 .orElseThrow(() -> new Exception("Usuario no encontrado"));
-        
-        // Al setear el nuevo conjunto, JPA borra lo anterior en la tabla intermedia e inserta lo nuevo
+
+        // Al setear el nuevo conjunto, JPA borra lo anterior en la tabla intermedia e
+        // inserta lo nuevo
         u.setGenerosFavoritos(nuevosGeneros);
-        
+
         return usuarioRepository.save(u);
     }
 
@@ -103,6 +105,25 @@ public class UsuarioService {
         return usuarioRepository.save(user);
     }
 
+    public void actualizarRacha(Usuario usuario) {
+        LocalDate hoy = LocalDate.now();
+        LocalDate ayer = hoy.minusDays(1);
+
+        if (usuario.getFechaUltimaActividad() == null) {
+            usuario.setRachaActual(1);
+        } else if (usuario.getFechaUltimaActividad().equals(ayer)) {
+            // Si la última vez fue ayer, sumamos 1 a la racha
+            usuario.setRachaActual(usuario.getRachaActual() + 1);
+        } else if (usuario.getFechaUltimaActividad().isBefore(ayer)) {
+            // Si ha pasado más de un día, la racha se reinicia a 1
+            usuario.setRachaActual(1);
+        }
+        // Si es el mismo día, no hacemos nada (mantenemos la racha)
+
+        usuario.setFechaUltimaActividad(hoy);
+        usuarioRepository.save(usuario);
+    }
+
     @Transactional
     public void eliminar(Long id) {
         // si da error es porque no tenemos CascadeType.ALL
@@ -111,13 +132,13 @@ public class UsuarioService {
 
     @Transactional
     public Usuario registrarUsuario(Usuario usuario) {
-        // Encriptar contraseña 
+        // Encriptar contraseña
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
         // Guardar el usuario ya encriptado
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        //  Crear estanterías automáticas
+        // Crear estanterías automáticas
         String[] basicas = { "Pendiente", "Leyendo", "Leído" };
         for (String nombre : basicas) {
             Estanteria e = new Estanteria();

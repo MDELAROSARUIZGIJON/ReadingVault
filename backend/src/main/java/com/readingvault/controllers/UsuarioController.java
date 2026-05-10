@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.readingvault.models.Genero;
 import com.readingvault.models.Usuario;
 import com.readingvault.repositories.GeneroRepository;
+import com.readingvault.repositories.UsuarioRepository;
 import com.readingvault.services.CloudinaryService;
 import com.readingvault.services.UsuarioService;
 
@@ -34,6 +35,8 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
     @Autowired
     private CloudinaryService cloudinaryService;
     @Autowired
@@ -66,18 +69,19 @@ public class UsuarioController {
         try {
             // Convertimos nombres a entidades existentes en la BD
             Set<Genero> generos = nombresGeneros.stream()
-                .map(nombre -> generoRepository.findByNombre(nombre)
-                    .orElseThrow(() -> new RuntimeException("El género '" + nombre + "' no existe en la base de datos")))
-                .collect(Collectors.toSet());
+                    .map(nombre -> generoRepository.findByNombre(nombre)
+                            .orElseThrow(() -> new RuntimeException(
+                                    "El género '" + nombre + "' no existe en la base de datos")))
+                    .collect(Collectors.toSet());
 
             // El servicio se encarga de la persistencia
             Usuario usuarioActualizado = usuarioService.actualizarGenerosFavoritos(id, generos);
-            
+
             // Limpiar password por seguridad
-            usuarioActualizado.setPassword(null); 
-            
+            usuarioActualizado.setPassword(null);
+
             return ResponseEntity.ok(usuarioActualizado);
-            
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al actualizar géneros: " + e.getMessage());
         }
@@ -142,4 +146,13 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{idUsuario}/actualizar-reto")
+    public ResponseEntity<?> actualizarReto(@PathVariable Long idUsuario, @RequestBody Map<String, Integer> payload) {
+        Usuario user = usuarioRepository.findById(idUsuario).get();
+        user.setObjetivoLectura(payload.get("objetivo"));
+        usuarioRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
 }

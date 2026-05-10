@@ -1,5 +1,6 @@
 package com.readingvault.models;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +33,9 @@ public class Usuario {
     private String localidad;
     private String biografia;
     private LocalDateTime ultimaConexion;
-    
+    private Integer objetivoLectura = 0;
+    private Integer rachaActual = 0;
+    private LocalDate fechaUltimaActividad;
     // Privacidad
     private String privacidadPerfil = "Público";
     private String privacidadLibros = "Público";

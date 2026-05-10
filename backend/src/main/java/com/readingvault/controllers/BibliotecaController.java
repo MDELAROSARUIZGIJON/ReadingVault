@@ -71,6 +71,32 @@ public class BibliotecaController {
         }
     }
 
+    @PutMapping("/actualizar-progreso")
+    public ResponseEntity<?> actualizarProgresoLectura(@RequestBody Map<String, Object> payload) {
+        try {
+            // Extraemos los datos del JSON
+            Long idRelacion = Long.parseLong(payload.get("idLibroEstanteria").toString());
+            Integer nuevaPagina = Integer.parseInt(payload.get("paginaActual").toString());
+
+            // Buscamos la relación en la BD
+            LibroEstanteria relacion = libroEstanteriaRepository.findById(idRelacion)
+                    .orElseThrow(() -> new RuntimeException("Relación no encontrada"));
+
+            // Actualizamos solo el progreso
+            relacion.setProgresoActual(nuevaPagina);
+
+            // Guardamos los cambios
+            libroEstanteriaRepository.save(relacion);
+
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Progreso actualizado a la página " + nuevaPagina,
+                    "progresoActual", nuevaPagina));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al guardar progreso: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/remove")
     public ResponseEntity<?> eliminarLibro(@RequestParam Long idUsuario, @RequestParam String titulo,
             @RequestParam String autor) {
@@ -91,31 +117,32 @@ public class BibliotecaController {
         return ResponseEntity.ok(biblioteca);
     }
 
-@PutMapping("/actualizar-estanteria")
-public ResponseEntity<?> actualizarEstanteria(@RequestBody Map<String, Object> payload) {
-    try {
-        Long idRelacion = Long.parseLong(payload.get("idLibroEstanteria").toString());
-        String nuevoEstado = payload.get("nuevoNombreEstanteria").toString();
-        
-        // Buscamos la relación actual (LibroEstanteria)
-        LibroEstanteria relacion = libroEstanteriaRepository.findById(idRelacion)
-            .orElseThrow(() -> new RuntimeException("Relación libro-estantería no encontrada"));
-        
-        // Obtenemos el ID del usuario de esa relación para buscar SU estantería "Leído"
-        Long idUsuario = relacion.getEstanteria().getUsuario().getIdUsuario();
+    @PutMapping("/actualizar-estanteria")
+    public ResponseEntity<?> actualizarEstanteria(@RequestBody Map<String, Object> payload) {
+        try {
+            Long idRelacion = Long.parseLong(payload.get("idLibroEstanteria").toString());
+            String nuevoEstado = payload.get("nuevoNombreEstanteria").toString();
 
-        // Buscamos la estantería de destino usando TU método del repositorio
-        Estanteria estanteriaDestino = estanteriaRepository.findByUsuario_IdUsuarioAndNombre(idUsuario, nuevoEstado)
-            .orElseThrow(() -> new RuntimeException("La estantería " + nuevoEstado + " no existe para este usuario"));
-        
-        // Cambiamos la estantería y guardamos
-        relacion.setEstanteria(estanteriaDestino);
-        libroEstanteriaRepository.save(relacion);
-        
-        return ResponseEntity.ok(Map.of("mensaje", "¡Libro movido a " + nuevoEstado + " con éxito!"));
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+            // Buscamos la relación actual (LibroEstanteria)
+            LibroEstanteria relacion = libroEstanteriaRepository.findById(idRelacion)
+                    .orElseThrow(() -> new RuntimeException("Relación libro-estantería no encontrada"));
+
+            // Obtenemos el ID del usuario de esa relación para buscar SU estantería "Leído"
+            Long idUsuario = relacion.getEstanteria().getUsuario().getIdUsuario();
+
+            // Buscamos la estantería de destino usando TU método del repositorio
+            Estanteria estanteriaDestino = estanteriaRepository.findByUsuario_IdUsuarioAndNombre(idUsuario, nuevoEstado)
+                    .orElseThrow(() -> new RuntimeException(
+                            "La estantería " + nuevoEstado + " no existe para este usuario"));
+
+            // Cambiamos la estantería y guardamos
+            relacion.setEstanteria(estanteriaDestino);
+            libroEstanteriaRepository.save(relacion);
+
+            return ResponseEntity.ok(Map.of("mensaje", "¡Libro movido a " + nuevoEstado + " con éxito!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
-}
 
 }

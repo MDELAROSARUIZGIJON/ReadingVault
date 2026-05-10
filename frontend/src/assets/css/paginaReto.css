@@ -9,8 +9,8 @@
   width: 100%;
   max-width: var(--container-width);
   margin: 0 auto;
-  /* Altura fija para que el footer no se pegue a las cartas */
-  min-height: 700px; 
+  /* Reducimos la altura mínima para que no sobre tanto espacio */
+  min-height: 550px; 
   display: flex;
   justify-content: center;
   align-items: flex-start; 
@@ -20,20 +20,19 @@
 
 /* --- LA CARTA / HOJA DEL LIBRO --- */
 .reto-card {
-  position: absolute; 
+position: absolute; 
   background-color: var(--color-azul-claro);
-  width: 100%;
-  max-width: 1000px;
-  min-height: 520px;
-  border-radius: 15px 40px 40px 15px;
+  width: 90%;
+  max-width: 750px;    /* Antes 1000px */
+  height: 400px;   /* Antes 520px */
+  border-radius: 12px 30px 30px 12px;
   
-  /* Lomo del libro grueso a la izquierda */
-  border-left: 20px solid var(--color-verde-oscuro); 
+  border-left: 15px solid var(--color-verde-oscuro); /* Lomo un poco más fino */
   border-top: 1px solid rgba(255,255,255,0.8);
   
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.2), 
-    0 0 30px rgba(255, 255, 255, 0.3);
+    0 15px 30px rgba(0, 0, 0, 0.15), 
+    0 0 20px rgba(255, 255, 255, 0.2);
     
   transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.8s;
   transform-origin: left center;
@@ -41,11 +40,32 @@
   backface-visibility: hidden;
 }
 
+.reto-card__data {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  gap: 10px; /* Espacio entre los dos textos */
+}
+
+.texto-principal {
+  font-size: 1.3rem;
+  color: var(--color-verde-oscuro);
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.texto-secundario {
+  font-size: 1.1rem;
+  color: var(--color-verde-oscuro);
+  opacity: 0.8;
+}
+
 .reto-card__title-container {
-  background-color: white;
-  margin: 30px 0 0 40px; 
-  padding: 10px 40px;
-  border-radius: 12px;
+background-color: white;
+  margin: 20px 0 0 30px; 
+  padding: 8px 30px;
+  border-radius: 10px;
   width: fit-content;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   position: relative;
@@ -53,20 +73,20 @@
 }
 
 .reto-card__title {
-  color: var(--color-salmon) !important; 
+color: var(--color-salmon) !important; 
   font-family: var(--font-titulos);
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.3rem;
 }
 
 /* --- ESTRUCTURA INTERNA --- */
 .reto-card__body {
-  display: flex;
+display: flex;
   flex-direction: row-reverse; 
   align-items: center;
   justify-content: space-between;
-  padding: 40px 60px 60px;
-  gap: 40px;
+  padding: 20px 60px ; /* Padding reducido */
+  
 }
 
 
@@ -81,14 +101,14 @@
   content: "SIGUE LEYENDO";
   position: absolute;
   top: -5px;
-  right: -10px;
-  width: 70px;
-  height: 150px;
+  right: -8px;
+  width: 55px;  
+  height: 120px;  
   background-color: var(--color-amarillo);
   color: var(--color-verde-oscuro);
   font-family: var(--font-titulos);
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,25 +130,26 @@
 }
 
 .reto-card__icon-circle {
-width: 160px;
-  height: 160px;
+width: 110px;        /* Antes 160px */
+  height: 110px;       /* Antes 160px */
   background-color: white;
-  border: 4px solid var(--color-amarillo);
+  border: 3px solid var(--color-amarillo);
   color: var(--color-verde-oscuro);
-  border-radius: 25px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 4.5rem;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  font-size: 3rem;     /* Antes 4.5rem */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
 }
 
 .reto-progress-bar {
 background-color: white; 
-  height: 35px;
-  border-radius: 20px;
+background-color: white; 
+  height: 25px;        /* Antes 35px */
+  border-radius: 15px;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 15px;
   overflow: hidden;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
   border: 1px solid rgba(0,0,0,0.05);
@@ -145,11 +166,21 @@ background-color: white;
   display: none !important;
 }
 
+.reto-card__body h4 {
+    font-size: 2rem !important; /* Para que "47" y "1" no se vean gigantes */
+}
+
+.reto-card__body p {
+    font-size: 1rem; /* Texto descriptivo "Días seguidos", etc. */
+}
 
 .reto-card.ultima-hoja {
   cursor: default;
 }
 
+.btn-add-progress{
+  padding: 0px;
+}
 
 .reto-card.ultima-hoja .btn-add-progress {
   cursor: pointer;
@@ -458,4 +489,123 @@ background-color: white;
     0% { transform: translateX(-50%) scale(0.8); }
     70% { transform: translateX(-50%) scale(1.05); }
     100% { transform: translateX(-50%) scale(1); }
+}
+
+.stats-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 15px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 15px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: var(--font-titulos);
+}
+
+.stat-value-sm {
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: var(--font-titulos);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    opacity: 0.6;
+    letter-spacing: 1px;
+}
+
+.stat-label, .stat-label-sm {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.ultima-hoja .reto-card__body {
+    flex-direction: column !important;
+    justify-content: center;
+    padding: 20px 40px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.analysis-layout {
+    display: flex;
+    flex-direction: row !important; /* Icono a un lado, datos al otro */
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px 50px !important;
+    height: 70%;
+}
+
+.analysis-stats {
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+    align-items: center;
+    margin-left: 40px;
+}
+
+.analysis-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.analysis-value {
+    font-size: 2.8rem; /* ¡Números grandes y potentes! */
+    font-weight: bold;
+    font-family: var(--font-titulos);
+    color: var(--color-verde-oscuro);
+    line-height: 1;
+}
+
+.analysis-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: var(--color-salmon);
+    letter-spacing: 1px;
+    margin-top: 10px;
+}
+
+/* Una línea vertical sutil entre los datos */
+.analysis-divider {
+    width: 2px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+}
+
+/* Ajuste del icono para que no se vea desproporcionado */
+.analysis-layout .reto-card__icon-circle {
+    width: 120px;
+    height: 120px;
+    font-size: 3.5rem;
+    flex-shrink: 0; /* Que no se encoja */
 }
