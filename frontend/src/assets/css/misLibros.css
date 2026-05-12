@@ -1,0 +1,299 @@
+/* Layout Principal */
+.biblioteca-layout {
+    display: flex;
+    gap: 40px; /* Espacio entre el sidebar y las cajas blancas */
+    align-items: flex-start;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.biblioteca-content {
+    flex: 1;
+    min-width: 0; /* Vital para que el grid no se rompa */
+}
+
+/* Sidebar */
+.biblioteca-sidebar {
+    width: 260px;
+    background-color: var(--color-azul-footer);
+    border-radius: 20px;
+    padding: 25px;
+    height: auto;
+}
+
+/* Contenedor lateral (Sidebar) - Estilo Compi */
+.sidebar-custom {
+    background-color: var(--color-azul-footer); 
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    /* Ajustamos los márgenes para que encaje en tu layout */
+    width: 260px;
+    flex-shrink: 0;
+}
+
+/* Títulos */
+.sidebar-custom__title {
+    font-family: var(--font-titulos); 
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-titulos); 
+    margin-bottom: 10px;
+}
+
+/* El divisor salmón que queda genial */
+.sidebar-custom__divider {
+    border: 0;
+    height: 1px;
+    background-color: var(--color-salmon); 
+    margin: 0 auto 20px auto;
+    width: 85%;
+    opacity: 1; 
+}
+
+.sidebar-custom__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-custom__item {
+    font-size: 1.1rem;
+    color: var(--text-body);
+    margin-bottom: 10px; /* Un poco más de espacio para los iconos */
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centramos el contenido como en su imagen */
+}
+
+.sidebar-custom__item:hover {
+    color: var(--color-verde-oscuro);
+    transform: scale(1.05);
+}
+
+.sidebar-custom__item.active {
+    font-weight: bold;
+    color: var(--text-titulos);
+}
+
+/* Caja Blanca de Estantería */
+.estanteria-container-white {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.estanteria-white-header {
+    padding: 15px 30px;
+    border-bottom: 2px solid var(--color-amarillo);
+}
+
+/* GRID DE 5 LIBROS (Solución al tamaño gigante) */
+.libros-fila-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columnas iguales */
+    gap: 15px;
+    padding: 25px;
+}
+
+/* Forzamos a que la LibroCard se adapte al grid */
+.libros-fila-grid .libro-card {
+    padding: 10px;
+    width: 100%;
+}
+
+.libros-fila-grid .libro-card__contenedor-imagen {
+    padding: 5px;
+}
+
+.libros-fila-grid .libro-card__imagen {
+    height: 140px; /* Tamaño controlado */
+}
+
+.libro-card__contenedor-imagen {
+    width: 100%;
+    height: 180px; /* Dale una altura fija para probar */
+    background-color: white; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.libro-card__imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Esto hace que rellene el hueco sin deformarse */
+    display: block; /* Evita espacios vacíos extraños */
+}
+
+/* Ver más */
+.ver-mas-container {
+    text-align: right;
+    padding: 0 25px 15px;
+}
+
+.link-ver-mas {
+    font-style: italic;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.link-ver-mas:hover {
+    color: var(--color-salmon);
+    text-decoration: underline;
+}
+
+/* Contenedor de la vista completa */
+.vista-listado-completo {
+    padding: 20px;
+    width: 100%;
+}
+
+.header-listado-biblioteca {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.btn-volver-vault {
+    background: none;
+    border: none;
+    color: var(--color-verde-oscuro);
+    font-weight: bold;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    width: fit-content;
+}
+
+.btn-volver-vault:hover {
+    color: var(--color-salmon);
+    text-decoration: underline;
+}
+
+.titulo-seccion-biblioteca {
+    font-size: 2.2rem;
+    color: var(--color-marron-oscuro);
+    font-family: var(--font-titulos);
+}
+
+/* LA CUADRÍCULA DE LA SEGUNDA FOTO */
+.libros-grid-total {
+    display: grid;
+    /* Esto hace que las columnas se creen solas según el espacio */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px; /* Espacio entre las tarjetas */
+    justify-items: center; /* Centra las cards en su celda */
+    width: 100%;
+}
+
+/* Ajuste para que las cards no se estiren raro en el grid total */
+.libros-grid-total .libro-card {
+    width: 100%;
+    max-width: 230px;
+    height: 100%;
+}
+
+/* Paginación */
+.paginacion-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Espacio pequeño entre botones */
+    margin: 40px 0;
+}
+
+/* Estilo general de los cuadraditos */
+.btn-numero, .btn-flecha {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px; /* Bordes redondeados de la foto */
+    border: 1px solid var(--color-verde-oscuro); /* O el verde de la imagen */
+    background-color: transparent;
+    color: var(--color-verde-oscuro);
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Página activa (el cuadrado oscuro) */
+.btn-numero.active {
+    background-color: #4b5043; /* El color oscuro de tu paleta */
+    color: white;
+    border-color: #4b5043;
+}
+
+/* Hovers */
+.btn-numero:hover:not(.active), .btn-flecha:hover:not(:disabled) {
+    background-color: rgba(75, 80, 67, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Botones de flecha específicos */
+.btn-flecha {
+    opacity: 0.8;
+}
+
+.btn-flecha:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* El botón de volver abajo que querías */
+.footer-listado {
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-volver-vault-footer {
+    background-color: var(--color-salmon);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-family: var(--font-titulos);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-volver-vault-footer:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
+
+/* Botón Volver al final */
+.footer-listado {
+    margin-top: 50px;
+    border-top: 1px solid var(--color-amarillo);
+    padding-top: 20px;
+    text-align: center;
+}
+
+.btn-volver-vault-footer {
+    background-color: var(--color-azul-footer);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-volver-vault-footer:hover {
+    background-color: var(--color-salmon);
+    transform: translateY(-3px);
+}
