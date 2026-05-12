@@ -26,6 +26,7 @@ import AjustesCuenta from "./pages/AjustesCuenta";
 import DetalleLibro from "./pages/DetalleLibro";
 import Comunidad from "./pages/Comunidad";
 import Reto from "./pages/Reto";
+import MisLibros from "./pages/MisLibros";
 
 function App() {
   useEffect(() => {
@@ -52,6 +53,7 @@ function App() {
           <Route path="/perfilUsuario" element={<PerfilUsuario />} />
           <Route path="/ajustesCuenta" element={<AjustesCuenta />} />
           <Route path="/reto" element={<Reto />} />
+          <Route path="mislibros" element={<MisLibros/>} />
           <Route path="/libro/:isbn" element={<DetalleLibro />} />
           <Route path="*" element={<div style={{ padding: '50px', textAlign: 'center' }}><h2>404 - Página no encontrada</h2></div>} />
         </Routes>

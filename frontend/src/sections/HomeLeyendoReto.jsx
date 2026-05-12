@@ -30,6 +30,7 @@ export default function HomeLeyendoReto() {
                 <h4 className="libro__progreso"></h4>
                 <div className="reto__barra"></div>
                 <Link to="/reto">ir a mi reto</Link>
+                <Link to="/mislibros">Mis libros</Link>
             </div>
         </section>
     )
