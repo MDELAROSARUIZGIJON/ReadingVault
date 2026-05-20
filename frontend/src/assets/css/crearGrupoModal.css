@@ -1,0 +1,125 @@
+/* Fondo oscuro translúcido */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Caja del Modal */
+.modal-custom {
+    background-color: white;
+    width: 90%;
+    max-width: 550px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Cabecera */
+.modal-header-custom {
+    background-color: var(--color-azul-footer);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title-custom {
+    color: var(--color-marron-oscuro);
+    font-family: var(--font-titulos);
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-marron-oscuro);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-close-modal:hover {
+    color: var(--color-salmon);
+    transform: scale(1.1);
+}
+
+/* Cuerpo y Formulario */
+.modal-body-custom {
+    padding: 30px;
+}
+
+.input-vault {
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    padding: 10px 15px;
+}
+
+.input-vault:focus {
+    border-color: var(--color-verde-oscuro);
+    box-shadow: 0 0 0 0.2rem rgba(168, 203, 191, 0.25);
+}
+
+/* Botones Footer */
+.modal-footer-custom {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-cancelar {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 25px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    font-family: var(--font-titulos);
+    transition: 0.3s;
+}
+
+/* Hover: Rosita con letras oscuras */
+.btn-cancelar:hover {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fee2e2; /* Oculta el borde blanco para que quede limpio */
+    transform: translateY(-2px);
+}
+
+.btn-crear {
+    background-color: var(--color-salmon);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.btn-crear:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

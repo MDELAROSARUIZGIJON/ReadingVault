@@ -33,4 +33,7 @@ public interface LibroRepository extends JpaRepository<Libro, Long> {
 
     // Recupera el último libro insertado por ID
     Optional<Libro> findFirstByOrderByIdLibroDesc();
+
+    Optional<Libro> findFirstByTituloAndAutor(String titulo, String autor);
+
 }

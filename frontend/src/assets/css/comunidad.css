@@ -62,9 +62,43 @@
     transform: translateY(-5px);
 }
 
+.text-vault-verde {
+    color: var(--color-verde-oscuro, #2c5d4f);
+}
+
+/* Contenedor de la lectura actual dentro de la tarjeta */
+.lectura-actual-badge {
+    background-color: #f4f7f6; /* Un gris verdoso muy suave */
+    border: 1px solid rgba(168, 203, 191, 0.3);
+    border-radius: 12px;
+    transition: 0.2s;
+}
+
+.lectura-vacia-badge {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 12px;
+}
+
+.libro-leyendo-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.libro-leyendo-titulo {
+    font-size: 0.95rem;
+    color: #212529;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Corta el título si es larguísimo para no deformar la tarjeta */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 /* Elementos de Grupo */
 .grupo-img {
-    height: 150px;
+    height: 180px;
     object-fit: cover;
 }
 
@@ -84,19 +118,21 @@
 
 /* Botones de acción */
 .btn-crear-grupo {
-    background-color: var(--color-amarillo);
-    color: var(--color-marron-oscuro);
+    background-color: var(--color-salmon); 
+    color: white; 
     border: none;
     padding: 10px 25px;
     border-radius: 30px;
     font-weight: bold;
     font-size: 1.1rem;
     font-family: var(--font-titulos);
-    transition: background-color 0.2s;
+    transition: 0.3s; 
 }
 
 .btn-crear-grupo:hover {
-    filter: brightness(0.9);
+    background-color: var(--color-amarillo); 
+    color: #333; 
+    transform: translateY(-2px); 
 }
 
 .btn-unirse {
@@ -127,3 +163,5 @@
     background-color: var(--color-azul-footer);
     color: white;
 }
+
+

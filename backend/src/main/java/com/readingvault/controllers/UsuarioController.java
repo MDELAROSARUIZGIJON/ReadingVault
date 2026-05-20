@@ -52,6 +52,17 @@ public class UsuarioController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping
+    public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
+        // Obtenemos todos los usuarios de la base de datos
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        
+        // Limpiamos las contraseñas 
+        usuarios.forEach(u -> u.setPassword(null));
+        
+        return ResponseEntity.ok(usuarios);
+    }
+
     @PutMapping("/{id}/actualizar")
     public ResponseEntity<?> actualizarDatos(@PathVariable Long id, @RequestBody Usuario usuarioDatos)
             throws Exception {
