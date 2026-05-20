@@ -28,6 +28,7 @@ import Comunidad from "./pages/Comunidad";
 import Reto from "./pages/Reto";
 import TusAmigos from "./pages/TusAmigos";
 import MisLibros from "./pages/MisLibros";
+import DetalleGrupo from "./pages/DetalleGrupo";
 
 function App() {
   useEffect(() => {
@@ -57,6 +58,7 @@ function App() {
           <Route path="mislibros" element={<MisLibros/>} />
           <Route path="/libro/:isbn" element={<DetalleLibro />} />
           <Route path="/tusamigos" element={<TusAmigos />} />
+          <Route path="/comunidad/grupo/:id" element={<DetalleGrupo />} />
           <Route path="*" element={<div style={{ padding: '50px', textAlign: 'center' }}><h2>404 - Página no encontrada</h2></div>} />
         </Routes>
       </main>

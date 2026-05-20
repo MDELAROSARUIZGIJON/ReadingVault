@@ -7,4 +7,5 @@ import com.readingvault.models.Comunidad;
 
 @Repository
 public interface ComunidadRepository extends JpaRepository<Comunidad, Long> {
+    
 }
