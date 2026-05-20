@@ -158,12 +158,21 @@ public class UsuarioController {
         }
     }
 
-    @PutMapping("/{idUsuario}/actualizar-reto")
-    public ResponseEntity<?> actualizarReto(@PathVariable Long idUsuario, @RequestBody Map<String, Integer> payload) {
-        Usuario user = usuarioRepository.findById(idUsuario).get();
-        user.setObjetivoLectura(payload.get("objetivo"));
-        usuarioRepository.save(user);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{id}/actualizar-reto")
+    public ResponseEntity<?> actualizarReto(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        // Validar que nos llega el número
+        if (!payload.containsKey("objetivoLectura")) {
+            return ResponseEntity.badRequest().body("Falta el campo objetivoLectura");
+        }
+        
+        int nuevoObjetivo = Integer.parseInt(payload.get("objetivoLectura").toString());
+        
+        // Buscar al usuario, cambiar el campo y GUARDAR
+        return usuarioRepository.findById(id).map(usuario -> {
+            usuario.setObjetivoLectura(nuevoObjetivo);
+            usuarioRepository.save(usuario);
+            return ResponseEntity.ok(usuario);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     // Manejar la privacidad

@@ -32,42 +32,32 @@ const Reto = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      fetch(
-        `http://localhost:8080/api/bibliotecas/usuario/${sesion.idUsuario}/completa`,
-        { headers },
-      )
+      // 1. Llamamos a tu tabla reto_lectura para sacar el objetivo del año actual
+      fetch(`http://localhost:8080/api/retos/usuario/${sesion.idUsuario}/actual`, { headers })
         .then((res) => res.json())
-        .then((items) => {
-          // Volvemos a obtener la sesión dentro para asegurar que existe y está fresca
-          const sesionActualizada = JSON.parse(localStorage.getItem("usuario"));
+        .then((retoData) => {
+          
+          // 2. Cargamos el resto de libros de las estanterías del usuario
+          return fetch(`http://localhost:8080/api/bibliotecas/usuario/${sesion.idUsuario}/completa`, { headers })
+            .then((res) => res.json())
+            .then((items) => {
+              const librosLeidos = items.filter(item => item.estanteria?.nombre === "Leído");
+              const sumaPaginas = librosLeidos.reduce((acc, item) => acc + (item.libro?.paginas || 0), 0);
+              const librosActivos = items.filter(item => item.estanteria?.nombre === "Leyendo");
+              const pendientes = items.filter(item => item.estanteria?.nombre === "Pendiente");
 
-          const librosLeidos = items.filter(
-            (item) => item.estanteria?.nombre === "Leído",
-          );
-          const sumaPaginas = librosLeidos.reduce(
-            (acc, item) => acc + (item.libro?.paginas || 0),
-            0,
-          );
-          const librosActivos = items.filter(
-            (item) => item.estanteria?.nombre === "Leyendo",
-          );
-
-          const pendientes = items.filter(
-            (item) => item.estanteria?.nombre === "Pendiente",
-          );
-
-          setLibrosLeyendo(librosActivos);
-          setLibrosPendientes(pendientes);
-          setDatosReto((prev) => ({
-            ...prev,
-            leidos: librosLeidos.length,
-            paginasTotales: sumaPaginas,
-            // Usamos la sesión que acabamos de leer
-            objetivo: sesionActualizada?.objetivoLectura || 0,
-            diasSeguidos: sesionActualizada?.rachaActual || 0,
-          }));
+              setLibrosLeyendo(librosActivos);
+              setLibrosPendientes(pendientes);
+              
+              setDatosReto({
+                leidos: librosLeidos.length,
+                paginasTotales: sumaPaginas,
+                objetivo: retoData.objetivoLibros || 0, 
+                diasSeguidos: sesion?.rachaActual || 0,
+              });
+            });
         })
-        .catch((err) => console.error("Error cargando reto:", err));
+        .catch((err) => console.error("Error cargando reto histórico:", err));
     }
   }, []);
 
@@ -83,36 +73,29 @@ const Reto = () => {
     const token = localStorage.getItem("token");
     const sesion = JSON.parse(localStorage.getItem("usuario"));
 
-    // Llamada al backend para guardar el objetivo
-    fetch(
-      `http://localhost:8080/api/usuarios/${sesion.idUsuario}/actualizar-reto`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ objetivoLectura: num }),
+    // Hacemos la petición a tu RetoLecturaController
+    fetch(`http://localhost:8080/api/retos/usuario/${sesion.idUsuario}`, {
+      method: "POST", // Mandamos un POST para crear o actualizar el registro
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-    )
-      .then((res) => {
-        if (res.ok) {
-          // Actualizamos el localStorage para que al refrescar no salga el 0
-          const sesionActualizada = { ...sesion, objetivoLectura: num };
-          localStorage.setItem("usuario", JSON.stringify(sesionActualizada));
+      body: JSON.stringify({ objetivoLibros: num }),
+    })
+      .then((res) => res.json())
+      .then((retoGuardado) => {
+        // Actualizamos el estado visual al instante
+        setDatosReto((prev) => ({
+          ...prev,
+          objetivo: retoGuardado.objetivoLibros,
+        }));
 
-          // Actualizamos el estado para que desaparezca el trofeo y salgan las tarjetas
-          setDatosReto((prev) => ({
-            ...prev,
-            objetivo: num,
-          }));
-
-          mostrarNotificacion("¡Reto anual configurado con éxito!", "success");
-        } else {
-          mostrarNotificacion("No se pudo guardar el reto", "error");
-        }
+        mostrarNotificacion("¡Reto anual guardado en el histórico!", "success");
       })
-      .catch((err) => console.error("Error al crear reto:", err));
+      .catch((err) => {
+        console.error("Error al crear reto histórico:", err);
+        mostrarNotificacion("No se pudo guardar el reto", "error");
+      });
   };
 
   const finalizarLibro = () => {
@@ -187,10 +170,9 @@ const Reto = () => {
 
   const reiniciarLibro = () => setPaginasPasadas([]);
   const librosRestantes = Math.max(datosReto.objetivo - datosReto.leidos, 0);
-  const porcentaje = Math.min(
-    (datosReto.leidos / datosReto.objetivo) * 100,
-    100,
-  );
+  const porcentaje = datosReto.objetivo > 0 
+    ? Math.min((datosReto.leidos / datosReto.objetivo) * 100, 100)
+    : 0;
 
   return (
     <div className="pagina-reto">
@@ -198,7 +180,6 @@ const Reto = () => {
 
       <main className="reto-main-content">
         {datosReto.objetivo === 0 ? (
-          /* VISTA CUANDO NO HAY RETO */
           <section className="reto-setup-card">
             <div
               className="reto-card__icon-circle"
@@ -213,7 +194,7 @@ const Reto = () => {
               ¡Aún no tienes tu reto de lectura anual!
             </h2>
             <p className="text-muted">
-              ¿Cuántos libros te propones leer este año?
+              ¿Cuántos libros te propones leer este año {new Date().getFullYear()}?
             </p>
 
             <div className="setup-input-group mt-4">
@@ -223,7 +204,7 @@ const Reto = () => {
                 value={nuevoObjetivo}
                 onChange={(e) => setNuevoObjetivo(e.target.value)}
               />
-              <button className="btn-progreso ms-3" onClick={crearRetoAnual}>
+              <button className="btn-progreso" onClick={crearRetoAnual}>
                 <span>Empezar Desafío</span>
               </button>
             </div>
@@ -231,7 +212,6 @@ const Reto = () => {
         ) : (
           <>
             {/* TARJETA 3 - ESTADÍSTICAS */}
-
             <section
               className={`reto-card ultima-hoja ${paginasPasadas.includes(3) ? "pagina-pasada" : ""}`}
               style={{ zIndex: 1 }}
@@ -241,7 +221,6 @@ const Reto = () => {
               </div>
 
               <div className="reto-card__body flex-column align-items-center">
-                {/* Mini-grid de estadísticas */}
                 <div className="stats-mini-grid">
                   <div className="stat-item">
                     <span
@@ -262,7 +241,6 @@ const Reto = () => {
                     <span className="stat-label">Leídos</span>
                   </div>
                   <div className="stat-item">
-                    
                     <span className="stat-value">
                       {librosPendientes.length}
                     </span>
@@ -274,7 +252,6 @@ const Reto = () => {
                   </div>
                 </div>
 
-                {/* BOTÓN REINICIAR (Cerrar Libro) */}
                 <button
                   onClick={reiniciarLibro}
                   className="btn-add-progress"
@@ -301,7 +278,6 @@ const Reto = () => {
                   style={{ flex: 1, marginLeft: "30px" }}
                 >
                   <div className="stats-mini-grid">
-                    {/* Fila superior: Ocupa las dos columnas (1 / -1) */}
                     <div
                       className="stat-item"
                       style={{ gridColumn: "1 / -1", padding: "20px" }}
@@ -318,7 +294,6 @@ const Reto = () => {
                       <span className="stat-label">Páginas totales leídas</span>
                     </div>
 
-                    {/* Fila inferior: Dos columnas al 50% */}
                     <div className="stat-item">
                       <span className="stat-value-sm">
                         {datosReto.leidos > 0
@@ -374,7 +349,7 @@ const Reto = () => {
                   </div>
                   <p className="texto-secundario" style={{ marginTop: "20px" }}>
                     Te quedan sólo <strong>{librosRestantes} libros</strong>{" "}
-                    para el desafío.
+                    para el desafío de este año.
                   </p>
                 </div>
               </div>

@@ -89,6 +89,99 @@ display: flex;
   
 }
 
+.reto-setup-card {
+    background-color: var(--color-azul-claro, #eef2f3); /* Fondo suave combinado con tu app */
+    width: 90%;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.reto-setup-card .reto-card__icon-circle {
+    background-color: white;
+    border: 3px solid var(--color-amarillo);
+    border-radius: 50%; /* Lo hacemos completamente redondo para el setup */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    margin-bottom: 10px;
+}
+
+.reto-setup-card h2 {
+    font-family: var(--font-titulos);
+    color: var(--color-verde-oscuro);
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.reto-setup-card p {
+    font-family: var(--font-cuerpo);
+    font-size: 1.1rem;
+    max-width: 80%;
+}
+
+.setup-input-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* El input de número ajustado para que no se coma la pantalla */
+.reto-setup-card .modal-input-num {
+    width: 100px;
+    height: 55px;
+    padding: 10px;
+    border: 2px solid #ced4da;
+    border-radius: 15px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: center;
+    background-color: white !important;
+    color: #333 !important;
+    transition: 0.3s;
+}
+
+.reto-setup-card .modal-input-num:focus {
+    border-color: var(--color-salmon);
+    outline: none;
+    box-shadow: 0 0 10px rgba(214, 122, 110, 0.2);
+}
+
+/* Botón de Empezar Desafío con el Hover a Amarillo y letras oscuras */
+.reto-setup-card .btn-progreso {
+    flex: 1;
+    height: 55px;
+    background-color: var(--color-salmon);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(214, 122, 110, 0.2);
+}
+
+.reto-setup-card .btn-progreso:hover {
+    background-color: var(--color-amarillo);
+    color: var(--color-verde-oscuro); /* Cambia a texto oscuro para leerse bien */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
+}
+
 
 .pagina-pasada {
   transform: rotateY(-140deg) scale(0.9);
