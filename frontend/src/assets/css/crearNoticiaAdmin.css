@@ -4,7 +4,7 @@
 
 /* Botón disparador inicial (Publicar nueva noticia) */
 .btn-publicar-noticia {
-  background-color: var(--color-verde-oscuro);
+  background-color: var(--color-salmon);
   color: #ffffff;
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -16,8 +16,9 @@
 }
 
 .btn-publicar-noticia:hover {
-  background-color: var(--color-marron-medio);
+  background-color: var(--color-amarillo);
   transform: translateY(-1px);
+  color: var(--color-verde-oscuro);
 }
 
 /* Contenedor tipo tarjeta del formulario */
@@ -147,7 +148,7 @@
 
 /* Botón de Envío del Formulario */
 .btn-enviar-noticia {
-  background-color: var(--color-verde-oscuro);
+  background-color: var(--color-salmon);
   color: #ffffff;
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -159,5 +160,5 @@
 }
 
 .btn-enviar-noticia:hover {
-  background-color: var(--color-marron-medio);
+  background-color: var(--color-amarillo);
 }

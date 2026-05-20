@@ -182,4 +182,31 @@ public class ReviewController {
         return ResponseEntity.ok(reviewRepository.findByUsuario_IdUsuario(idUsuario));
     }
 
+    // Obtiene una recomendación aleatoria de 5 estrellas de un amigo
+    @GetMapping("/recomendacion-amigo/{idUsuario}")
+    public ResponseEntity<?> obtenerRecomendacionAmigo(@PathVariable Long idUsuario) {
+        // Buscamos todas las reviews con la nota máxima (5)
+        List<Review> reviewsPerfectas = reviewRepository.findByPuntuacion(5);
+
+        // Filtramos para quedarnos solo con las de otros usuarios (tus amigos)
+        List<Review> deAmigos = reviewsPerfectas.stream()
+                .filter(r -> r.getUsuario() != null && !r.getUsuario().getIdUsuario().equals(idUsuario))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (deAmigos.isEmpty()) {
+            // Si no hay reviews de amigos, mandamos un 404 para que el Front active el Plan B
+            return ResponseEntity.notFound().build();
+        }
+
+        // Barajamos la lista para que la recomendación cambie al recargar la página
+        java.util.Collections.shuffle(deAmigos);
+        Review reviewGanadora = deAmigos.get(0);
+
+        // Devolvemos un mapa limpio con el libro y el nombre del amigo que lo reseñó
+        return ResponseEntity.ok(Map.of(
+            "libro", reviewGanadora.getLibro(),
+            "nombreAmigo", reviewGanadora.getUsuario().getNombre()
+        ));
+    }
+
 }

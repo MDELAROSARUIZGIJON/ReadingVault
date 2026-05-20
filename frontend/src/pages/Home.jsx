@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import NoticiaCard from "../components/NoticiaCard";
 import CrearNoticiaAdmin from "../components/CrearNoticiaAdmin";
@@ -20,7 +20,7 @@ export default function Home() {
 
   // --- ESTADOS COLUMNA DERECHA ---
   const [libroAmigo, setLibroAmigo] = useState(null);
-  const [nombreRecomendador, setNombreRecomendador] = useState("ReadingVault"); // Estado dinámico para el texto
+  const [nombreRecomendador, setNombreRecomendador] = useState("ReadingVault"); 
   const [libroAnio, setLibroAnio] = useState(null);
   const [cargandoDerecha, setCargandoDerecha] = useState(true);
 
@@ -67,7 +67,7 @@ export default function Home() {
       return;
     }
 
-    // 1. Cargar columna Izquierda (Progreso del usuario y Reto Anual seguro)
+    // 1. CARGA COLUMNA IZQUIERDA: Progreso de lectura y Reto Anual seguro
     fetch(`http://localhost:8080/api/bibliotecas/usuario/${miSesion.idUsuario}/completa`, { headers })
       .then((res) => (res.ok ? res.json() : []))
       .then((items) => {
@@ -84,14 +84,14 @@ export default function Home() {
           .then((retoData) => {
             setStats({
               leidos: retoData.completados !== undefined ? retoData.completados : totalLeidosManual,
-              objetivoReto: retoData.objetivoLibros || miSesion.objetivoLectura || miSesion.objetivoReto || 20,
+              objetivoReto: retoData.objetivoLibros || miSesion.objetivoLectura || 20,
             });
             setCargandoIzquierda(false);
           })
           .catch(() => {
             setStats({
               leidos: totalLeidosManual,
-              objetivoReto: miSesion.objetivoLectura || miSesion.objetivoReto || 20,
+              objetivoReto: miSesion.objetivoLectura || 20,
             });
             setCargandoIzquierda(false);
           });
@@ -101,48 +101,45 @@ export default function Home() {
         setCargandoIzquierda(false);
       });
 
-    // 2. Cargar columna Central
+    // 2. CARGA COLUMNA CENTRAL: Noticias
     cargarNoticiasReales();
 
-    // 3. LÓGICA MEJORADA: Sistema de recomendaciones Inteligente (Amigos -> Global)
-    fetch("http://localhost:8080/api/libros/buscar?q=libros&isGenero=false", { headers })
-      .then((res) => (res.ok ? res.json() : []))
+    // 3. MOTOR DE RECOMENDACIONES: Llamada limpia al método específico del backend
+    fetch(`http://localhost:8080/api/reviews/recomendacion-amigo/${miSesion.idUsuario}`, { headers })
+      .then((res) => {
+        if (!res.ok) throw new Error("Sin recomendaciones de amigos");
+        return res.json();
+      })
       .then((data) => {
-        if (data.length > 0) {
-          // Intentamos buscar libros que contengan valoraciones o reseñas de amigos
-          // Nota: Ajusta 'valoracionesAmigos' o 'resenas' según la estructura exacta de tu objeto Libro
-          const conResenasAmigos = data.filter(libro => 
-            libro.valoracionesAmigos?.length > 0 || libro.comentariosAmigos?.length > 0
-          );
-
-          if (conResenasAmigos.length > 0) {
-            // Plan A: Elegimos un libro puntuado por un amigo al azar
-            const randomLibroAmigo = conResenasAmigos[Math.floor(Math.random() * conResenasAmigos.length)];
-            setLibroAmigo(randomLibroAmigo);
-            
-            // Sacamos el nombre del amigo (si está disponible, si no ponemos genérico)
-            const nombreAmigo = randomLibroAmigo.valoracionesAmigos?.[0]?.nombreUsuario || "un amigo";
-            setNombreRecomendador(`tu amigo ${nombreAmigo}`);
-          } else {
-            // Plan B: No hay amigos o no tienen reseñas. Filtramos los mejores libros globales de la plataforma
-            // Ordenamos por puntuación media de mayor a menor y barajamos los mejores
-            const buenosGlobales = data.filter(libro => (libro.puntuacionMedia || libro.puntuacion || 0) >= 4);
-            const poolSeleccion = buenosGlobales.length > 0 ? buenosGlobales : data;
-            
+        // Plan A: El endpoint nos da el libro de 5 estrellas de un amigo
+        setLibroAmigo({
+          isbn: data.libro.isbn,
+          titulo: data.libro.titulo,
+          autor: data.libro.autor,
+          portada: data.libro.fotoPortada || data.libro.portada
+        });
+        setNombreRecomendador(`tu amigo ${data.nombreAmigo || "un amigo"}`);
+      })
+      .catch(() => {
+        // Plan B: Si no hay amigos con notas de 5, tiramos del catálogo global de ReadingVault
+        fetch("http://localhost:8080/api/libros/buscar?q=libros&isGenero=false", { headers })
+          .then((res) => (res.ok ? res.json() : []))
+          .then((todosLosLibros) => {
+            const buenosGlobales = todosLosLibros.filter(l => (l.puntuacionMedia || l.valoracion || 0) >= 4);
+            const poolSeleccion = buenosGlobales.length > 0 ? buenosGlobales : todosLosLibros;
             const aleatorioGlobal = [...poolSeleccion].sort(() => 0.5 - Math.random())[0];
+            
             setLibroAmigo(aleatorioGlobal);
             setNombreRecomendador("ReadingVault");
-          }
-        }
-      })
-      .catch((err) => console.error("Error al procesar el motor de recomendaciones:", err));
+          });
+      });
 
-    // 4. Cargar columna Derecha: Recuperar el libro del año estático
+    // 4. CARGA COLUMNA DERECHA: Libro del año
     cargarLibroDelAnioFijo();
 
   }, [navigate]);
 
-  // MANEJADOR EXCLUSIVO: Buscador interno para actualizar el libro del año
+  // MANEJADOR EXCLUSIVO: Cambiar el libro del año (Solo Administradores)
   const handleCambiarLibroAnioAdmin = async () => {
     const { value: textoBusqueda } = await Swal.fire({
       title: '🏆 Seleccionar Libro del Año',
@@ -258,13 +255,13 @@ export default function Home() {
               const retoData = await resReto.json();
               setStats({
                 leidos: retoData.completados !== undefined ? retoData.completados : totalLeidosManual,
-                offsetObjetivo: retoData.objetivoLibros || miSesion.objetivoLectura || miSesion.objetivoReto || 20
+                objetivoReto: retoData.objetivoLibros || miSesion.objetivoLectura || 20
               });
             } else {
-              setStats({ leidos: totalLeidosManual, objetivoReto: miSesion.objetivoLectura || miSesion.objetivoReto || 20 });
+              setStats({ leidos: totalLeidosManual, objetivoReto: miSesion.objetivoLectura || 20 });
             }
           } catch (e) {
-            setStats({ leidos: totalLeidosManual, objetivoReto: miSesion.objetivoLectura || miSesion.objetivoReto || 20 });
+            setStats({ leidos: totalLeidosManual, objetivoReto: miSesion.objetivoLectura || 20 });
           }
         }
       } catch (error) {
@@ -313,7 +310,11 @@ export default function Home() {
               )}
             </div>
 
-            <div className="reto">
+            <div 
+              className="reto" 
+              onClick={() => navigate("/reto")}
+              style={{ cursor: "pointer" }}
+            >
               <h3 className="reto__titulo">Reto del año</h3>
               <p className="reto__progreso-texto">{stats.leidos} de {stats.objetivoReto} libros leídos</p>
               <div className="progress-container-reto">
@@ -367,7 +368,12 @@ export default function Home() {
         <aside className="home-grid__sidebar-right">
           <section className="recomendaciones">
             {libroAmigo && (
-              <div className="recomendacion">
+              /* Hacemos clicable toda la card usando el evento onClick y el navigate */
+              <div 
+                className="recomendacion" 
+                onClick={() => navigate(`/libro/${libroAmigo.isbn}`)}
+                style={{ cursor: "pointer" }} 
+              >
                 <h3 className="recomendacion__titulo">¡Te recomendamos!</h3>
                 <div className="recomendacion__bloque-info">
                   <picture className="recomendacion__picture">
@@ -378,17 +384,17 @@ export default function Home() {
                     <h4 className="recomendacion__autor">{libroAmigo.autor || "Autor Desconocido"}</h4>
                   </div>
                 </div>
-                {/* Imprime de forma limpia la procedencia de la valoración sin harcodear */}
                 <p className="recomendacion__amigo">Selección de {nombreRecomendador}</p>
-                <div className="recomendacion__boton">
-                  <Link to={`/libro/${libroAmigo.isbn}`} className="recomendacion__enlace">Recomendaciones de tus amigos</Link>
-                </div>
               </div>
             )}
 
             {libroAnio && (
-              <div className="libroAño">
-                <div className="d-flex justify-content-between align-items-center mb-2">
+              <div 
+                className="libroAño"
+                onClick={() => navigate(`/libro/${libroAnio.isbn}`)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2" onClick={(e) => e.stopPropagation()}>
                   <h3 className="recomendacion__titulo m-0">¡Libro del año!</h3>
                   {esAdmin && (
                     <button 
@@ -410,9 +416,6 @@ export default function Home() {
                     <h4 className="recomendacion__libro">{libroAnio.titulo}</h4>
                     <h4 className="recomendacion__autor">{libroAnio.autor || "Autor Desconocido"}</h4>
                   </div>
-                </div>
-                <div className="recomendacion__boton">
-                  <Link to={`/libro/${libroAnio.isbn}`} className="recomendacion__enlace">Ver más recomendaciones</Link>
                 </div>
               </div>
             )}

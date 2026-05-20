@@ -16,4 +16,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByUsuario_IdUsuarioAndLibro_IdLibro(Long idUsuario, Long idLibro);
 
     List<Review> findByUsuario_IdUsuario(Long idUsuario);
+
+    List<Review> findByPuntuacion(int puntuacion);
 }

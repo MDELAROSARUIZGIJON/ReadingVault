@@ -243,9 +243,8 @@
 }
 
 .noticias__btn-ver-mas {
-  background-color: transparent;
-  border: 2px solid var(--color-verde-oscuro);
-  color: var(--color-verde-oscuro);
+  background-color: var(--color-salmon);
+  color: #ffffff;
   font-family: var(--font-body);
   font-weight: 700;
   padding: 0.5rem 2rem;
@@ -254,8 +253,8 @@
 }
 
 .noticias__btn-ver-mas:hover {
-  background-color: var(--color-verde-oscuro);
-  color: #ffffff;
+  background-color: var(--color-amarillo);
+  color: var(--color-verde-oscuro);
 }
 
 /* COLUMNA DERECHA (Recomendaciones y Destacados) */
@@ -310,7 +309,7 @@
 
 .recomendacion__autor {
   font-family: var(--font-body);
-  color: var(--text-body);
+  color: var(--color-salmon);
   font-size: 0.8rem;
   opacity: 0.8;
   margin: 2px 0 0 0;
@@ -319,7 +318,7 @@
 .recomendacion__amigo {
   font-family: var(--font-body);
   font-size: 0.8rem;
-  background-color: rgba(255, 209, 102, 0.2);
+  background-color: var(--color-azul-footer);
   color: var(--color-marron-medio);
   padding: 4px 8px;
   border-radius: 6px;
@@ -349,4 +348,47 @@
 .recomendacion__enlace:hover {
   background-color: var(--color-azul-footer);
   color: var(--color-verde-oscuro);
+}
+
+/* ==========================================================================
+   MODIFICACIÓN: Añadir transiciones base a los contenedores
+   ========================================================================== */
+
+.leyendo, .reto {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(60, 21, 24, 0.08);
+  /* Añadimos transiciones suaves para todo (sombras, bordes y transformación) */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.recomendacion, .libroAño {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(60, 21, 24, 0.08);
+  /* Añadimos transiciones suaves para todo */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Efecto al pasar el ratón por encima del Reto, la Recomendación y el Libro del Año */
+.reto:hover, 
+.recomendacion:hover, 
+.libroAño:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  border-color: rgba(155, 196, 188, 0.5);
+}
+
+/* Pequeño extra estético para la barra de progreso del reto cuando pasas el ratón por encima de la tarjeta */
+.reto:hover .progress-bar-fill {
+  filter: brightness(1.05);
+}
+
+/* Modificamos el hover que tenías del libro leyendo para que vaya a juego con el resto */
+.leyendo__libro:hover {
+  transform: scale(1.03);
 }
