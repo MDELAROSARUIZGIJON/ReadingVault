@@ -23,7 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.readingvault.models.Genero;
 import com.readingvault.models.Usuario;
+import com.readingvault.repositories.EstanteriaRepository;
 import com.readingvault.repositories.GeneroRepository;
+import com.readingvault.repositories.LibroEstanteriaRepository;
 import com.readingvault.repositories.UsuarioRepository;
 import com.readingvault.services.CloudinaryService;
 import com.readingvault.services.UsuarioService;
@@ -41,6 +43,10 @@ public class UsuarioController {
     private CloudinaryService cloudinaryService;
     @Autowired
     private GeneroRepository generoRepository;
+    @Autowired
+    private EstanteriaRepository estanteriaRepository;
+    @Autowired
+    private LibroEstanteriaRepository libroEstanteriaRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtenerPerfil(@PathVariable Long id) {
@@ -53,14 +59,41 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
-        // Obtenemos todos los usuarios de la base de datos
+    public ResponseEntity<?> obtenerTodosLosUsuarios() {
+        // 1. Obtenemos todos los usuarios de la base de datos
         List<Usuario> usuarios = usuarioRepository.findAll();
         
-        // Limpiamos las contraseñas 
-        usuarios.forEach(u -> u.setPassword(null));
+        // 2. Estructura de respuesta combinada para React
+        List<Map<String, Object>> respuesta = new java.util.ArrayList<>();
         
-        return ResponseEntity.ok(usuarios);
+        for (Usuario u : usuarios) {
+            Map<String, Object> userMap = new java.util.HashMap<>();
+            userMap.put("idUsuario", u.getIdUsuario());
+            userMap.put("nombreUsuario", u.getNombreUsuario());
+            userMap.put("fotoPerfil", u.getFotoPerfil());
+            userMap.put("rol", u.getRol());
+            userMap.put("biografia", u.getBiografia());
+            userMap.put("localidad", u.getLocalidad());
+            
+            // 3. Buscamos la estantería "Leído" de este usuario concreto
+            List<com.readingvault.models.Estanteria> estanteriasLeido = estanteriaRepository
+                    .findByUsuarioIdUsuarioAndNombreIgnoreCase(u.getIdUsuario(), "Leído");
+            
+            long leidos = 0;
+            
+            // 4. Si encontramos la estantería, le pedimos los libros a la tabla intermedia
+            if (!estanteriasLeido.isEmpty()) {
+                Long idEstanteria = estanteriasLeido.get(0).getIdEstanteria();
+                leidos = libroEstanteriaRepository.findByEstanteriaIdEstanteria(idEstanteria).size();
+            }
+            
+            // Pasamos el total real calculado a la tarjeta de React
+            userMap.put("totalLibros", leidos);
+            
+            respuesta.add(userMap);
+        }
+        
+        return ResponseEntity.ok(respuesta);
     }
 
     @PutMapping("/{id}/actualizar")

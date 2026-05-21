@@ -20,7 +20,7 @@ export default function EmpiezaAhora() {
             </p>
             <div className="empieza__boton-container">
               {/* Enlace y texto dinámicos según estado de login */}
-              <Link to={estaLogueado ? "/home" : "/login"} className="empieza__enlace">EMPIEZA AHORA</Link>
+              <Link to={estaLogueado ? "/home" : "/registro"} className="empieza__enlace">EMPIEZA AHORA</Link>
             </div>
           </div>
         </div>
