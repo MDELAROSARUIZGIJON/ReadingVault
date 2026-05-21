@@ -92,19 +92,26 @@
 
 .btn-vault:hover {
     background-color: var(--color-amarillo);
-    color: white;
+    color: var(--color-verde-oscuro);
     transform: translateY(-2px);
 }
 
 /* Barra de progreso del reto */
-.progress {
-    background-color: #e9ecef;
-    border-radius: 10px;
+.progress-reto-container {
+    background-color: #e9ecef !important; 
+    border-radius: 20px;
+    height: 15px; 
     overflow: hidden;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.progress-bar {
-    transition: width 0.6s ease;
+/* La barra de progreso (tu degradado que respeta el %) */
+.progress-reto-bar {
+    background: linear-gradient(90deg, var(--color-salmon) 0%, var(--color-amarillo) 100%) !important;
+    height: 100%;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(235, 189, 108, 0.4); 
+    transition: width 0.5s ease-in-out; 
 }
 
 /* Actividad Reciente */

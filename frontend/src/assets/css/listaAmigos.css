@@ -116,3 +116,19 @@
     transform: translateY(-50%);
     color: var(--color-azul-footer);
 }
+
+/* BOTÓN VOLVER AL PERFIL */
+.btn-volver-perfil {
+    background-color: var(--color-amarillo);
+    color: var(--color-verde-oscuro); 
+    border: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-volver-perfil:hover {
+    background-color: var(--color-salmon);
+    color: white; 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(214, 122, 110, 0.3); 
+}
