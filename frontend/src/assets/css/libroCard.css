@@ -1,6 +1,6 @@
 /* --- Tarjeta Principal --- */
 .libro-card {
-  background-color: #A8CBBF;
+  background-color: var(--color-azul-footer);
   padding: 20px;
   border-radius: 15px;
   text-align: center;
@@ -40,13 +40,13 @@
 .libro-card__titulo {
   font-size: 0.95rem;
   font-weight: bold;
-  color: var(--color-marron-oscuro);
+  color: var(--color-verde-oscuro);
   font-family: var(--font-titulos);
 }
 
 .libro-card__autor {
   font-size: 0.85rem;
-  color: var(--color-marron-medio);
+  color: var(--color-verde-oscuro);
   font-family: var(--font-body);
 }
 

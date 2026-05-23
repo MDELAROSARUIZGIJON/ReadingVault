@@ -54,7 +54,7 @@
     font-weight: 700;
     font-size: 1.1rem;
     color: var(--text-titulos);
-    background: transparent; /* Sobreescribimos el fondo gris del index.css si hace falta */
+    background: transparent;
     padding: 0;
 }
 
@@ -131,4 +131,20 @@
 
 .btn-amarillo:hover {
     filter: brightness(0.9);
+}
+
+.resenas-header{
+    color: var(--color-verde-oscuro);
+}
+
+p{
+    color: var(--color-verde-oscuro);
+}
+
+.fecha-resumen{
+    font-weight: bold;
+}
+
+.sidebar-nombre-usuario{
+    color: var(--color-verde-oscuro);
 }

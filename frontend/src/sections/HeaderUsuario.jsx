@@ -71,7 +71,7 @@ export default function HeaderUsuario({ user, sonAmigos, permisoDatos }) {
 
       <div className="header-info-container">
         <div className="d-flex align-items-center gap-3 mb-3">
-          <h1 style={{ fontSize: "2.2rem", margin: 0, color: "var(--color-marron-oscuro)" }}>
+          <h1 style={{ fontSize: "2.2rem", margin: 0, color: "var(--color-verde-oscuro)" }}>
             {user.nombreUsuario}
           </h1>
 

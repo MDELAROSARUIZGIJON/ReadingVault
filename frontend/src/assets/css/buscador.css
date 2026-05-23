@@ -22,6 +22,7 @@
     margin-bottom: 10px;
 }
 
+
 /* Subtítulo del encabezado */
 .header-buscador__subtitulo {
     color: var(--text-body);
@@ -209,4 +210,8 @@
     font-size: 0.9rem;
     font-style: italic;
     color: var(--text-body);
+}
+
+.ordenacion{
+    color: var(--color-verde-oscuro);
 }

@@ -170,7 +170,7 @@ const BuscadorLibros = () => {
             </div>
 
             <div className="sort-section d-flex align-items-center mb-4">
-              <span className="me-2">Ordenar por:</span>
+              <span className="me-2 ordenacion">Ordenar por:</span>
               <select className="sort-section__select" value={orden} onChange={cambiarOrden}>
                 <option value="relevance">Relevancia</option>
                 <option value="rating">Mejor valorados</option>
