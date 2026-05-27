@@ -73,74 +73,39 @@ public class ComunidadController {
             @RequestParam("nombre") String nombre,
             @RequestParam("descripcion") String descripcion,
             @RequestParam("idUsuario") Long idUsuario,
-            @RequestParam(value = "idLibro", required = false) Long idLibro,
-            @RequestParam(value = "tituloLibro", required = false) String tituloLibro,
-            @RequestParam(value = "autorLibro", required = false) String autorLibro,
-            @RequestParam(value = "portadaLibro", required = false) String portadaLibro,
+            @RequestParam("idLibro") Long idLibro,
             @RequestParam(value = "foto", required = false) MultipartFile foto) {
 
         try {
-            // Comprobamos que el usuario existe
             Usuario creador = usuarioRepository.findById(idUsuario)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
+
+            // Recuperamos el libro de la base de datos
+            Libro libro = libroRepository.findById(idLibro)
+                    .orElseThrow(() -> new Exception("Libro no encontrado en base de datos"));
 
             Comunidad nuevaComunidad = new Comunidad();
             nuevaComunidad.setNombre(nombre);
             nuevaComunidad.setDescripcion(descripcion);
             nuevaComunidad.setFechaCreacion(LocalDate.now().toString());
+            nuevaComunidad.setLibro(libro);
 
-            Libro libroParaVincular = null;
-
-            if (idLibro != null) {
-                // Si ya viene con un ID real de la base de datos, lo usamos
-                libroParaVincular = libroRepository.findById(idLibro).orElse(null);
-            } else if (tituloLibro != null && !tituloLibro.isEmpty()) {
-                // Si no tiene ID (es de Google Books), miramos si ya existe por Título y Autor
-                Optional<Libro> libroExistente = libroRepository.findByTituloAndAutor(tituloLibro, autorLibro);
-
-                if (libroExistente.isPresent()) {
-                    libroParaVincular = libroExistente.get();
-                } else {
-                    // Si el libro no existe de ninguna forma en nuestra BD, lo creamos
-                    Libro nuevoLibro = new Libro();
-                    nuevoLibro.setTitulo(tituloLibro);
-                    nuevoLibro.setAutor(autorLibro != null ? autorLibro : "Autor Desconocido");
-                    nuevoLibro.setFotoPortada(portadaLibro);
-                    nuevoLibro.setDescripcion("Libro sincronizado automáticamente desde un club de lectura.");
-                    nuevoLibro.setGeneros("General");
-
-                    // Lo guardamos para que la base de datos le asigne un ID real
-                    libroParaVincular = libroRepository.save(nuevoLibro);
-                }
-            }
-
-            if (libroParaVincular != null) {
-                nuevaComunidad.setLibro(libroParaVincular);
-            }
-
-            // Foto de la comunidad
             if (foto != null && !foto.isEmpty()) {
-                String urlFoto = cloudinaryService.subirFoto(foto);
-                nuevaComunidad.setFoto(urlFoto);
+                nuevaComunidad.setFoto(cloudinaryService.subirFoto(foto));
             } else {
-                nuevaComunidad.setFoto(
-                        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=300&auto=format&fit=crop");
+                nuevaComunidad.setFoto("https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=300&auto=format&fit=crop");
             }
 
-            // Guardamos la comunidad
             Comunidad comunidadGuardada = comunidadRepository.save(nuevaComunidad);
 
-            // Relación del creador como admin
             UsuarioComunidad relacion = new UsuarioComunidad();
             relacion.setUsuario(creador);
             relacion.setComunidad(comunidadGuardada);
             relacion.setFechaUnion(LocalDate.now().toString());
             relacion.setRol("admin");
-
             usuarioComunidadRepository.save(relacion);
 
             return ResponseEntity.ok(comunidadGuardada);
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al crear el club de lectura: " + e.getMessage());
         }
@@ -199,15 +164,15 @@ public class ComunidadController {
     public ResponseEntity<?> unirseGrupo(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
         Long idUsuario = payload.get("idUsuario");
 
-        // Si ya existe devolvemos la comunidad actual
-        // para que el frontend se sincronice sin romperse.
-        if (usuarioComunidadRepository.existsByComunidadIdComunidadAndUsuarioIdUsuario(id, idUsuario)) {
-            return ResponseEntity.ok(comunidadRepository.findById(id).get());
-        }
-
-        // Si no existe, lo creamos
         Comunidad comunidad = comunidadRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+
+        // Verificamos si ya existe
+        if (usuarioComunidadRepository.existsByComunidadIdComunidadAndUsuarioIdUsuario(id, idUsuario)) {
+            return ResponseEntity.ok(comunidad);
+        }
+
+        // Si no existe, creamos la relación
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -217,10 +182,14 @@ public class ComunidadController {
         relacion.setRol("miembro");
         relacion.setFechaUnion(LocalDate.now().toString());
 
+        // Guardamos la relación
         usuarioComunidadRepository.save(relacion);
 
-        // Forzamos el refresco para devolver la comunidad con el nuevo miembro
-        return ResponseEntity.ok(comunidadRepository.findById(id).get());
+        // Añadimos la relación a la lista de la comunidad en memoria
+        comunidad.getMiembros().add(relacion);
+        
+        // Devolvemos la misma comunidad que ya tiene el miembro nuevo añadido en la lista
+        return ResponseEntity.ok(comunidad);
     }
 
     @PostMapping("/{id}/actualizar-progreso")
@@ -235,40 +204,20 @@ public class ComunidadController {
 
     @PostMapping("/{id}/cambiar-libro")
     public ResponseEntity<?> cambiarLibro(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
-        Comunidad c = comunidadRepository.findById(id).get();
-        Libro libroFinal = null;
+        if (!payload.containsKey("idLibro")) {
+            return ResponseEntity.badRequest().body("Se requiere un idLibro válido de la base de datos.");
+        }
 
-        if (payload.containsKey("idLibro") && payload.get("idLibro") != null) {
-            Long idLibro = Long.valueOf(payload.get("idLibro").toString());
-            libroFinal = libroRepository.findById(idLibro).get();
-        } else {
-                // 1. Extraemos las variables del payload (¡Esto arregla las líneas rojas!)
-                String titulo = (String) payload.get("tituloLibro");
-                String autor = (String) payload.get("autorLibro");
-                
-                Libro nuevo = new Libro();
-                nuevo.setTitulo(titulo);
-                nuevo.setAutor(autor);
-                nuevo.setFotoPortada((String) payload.get("portadaLibro"));
-                
-                // 2. Manejo limpio de las páginas (¡Esto arregla la línea amarilla!)
-                if (payload.containsKey("paginasLibro") && payload.get("paginasLibro") != null) {
-                    Object paginasObj = payload.get("paginasLibro");
-                    if (paginasObj instanceof Integer) {
-                        // Si el JSON ya lo mandó como número, lo usamos directo
-                        nuevo.setPaginas((Integer) paginasObj);
-                    } else {
-                        // Si por algún motivo llega como texto, lo convertimos
-                        nuevo.setPaginas(Integer.parseInt(paginasObj.toString()));
-                    }
-                }
-                
-                nuevo.setDescripcion("Añadido desde comunidad.");
-                libroFinal = libroRepository.save(nuevo);
-            }
+        Long idLibro = Long.valueOf(payload.get("idLibro").toString());
+        
+        Comunidad c = comunidadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+        
+        Libro libroNuevo = libroRepository.findById(idLibro)
+                .orElseThrow(() -> new RuntimeException("Libro no encontrado en base de datos"));
 
-        c.setLibro(libroFinal);
-        c.setPaginaActual(0); // Reseteamos progreso
+        c.setLibro(libroNuevo);
+        c.setPaginaActual(0);
         c.setTotalPaginas(0);
         c.setNotaProgreso("");
         comunidadRepository.save(c);
@@ -299,20 +248,26 @@ public class ComunidadController {
     public ResponseEntity<?> salirGrupo(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         Long idUsuario = Long.valueOf(payload.get("idUsuario").toString());
         
-        // Buscamos si existe la relación entre este usuario y esta comunidad
+        Comunidad comunidad = comunidadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+
+        // Eliminamos la relación
         Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
                 .findByComunidadIdComunidadAndUsuarioIdUsuario(id, idUsuario);
         
-        // Si existe, la borramos
         if (relacion.isPresent()) {
+            comunidad.getMiembros().remove(relacion.get());
             usuarioComunidadRepository.delete(relacion.get());
+            // Forzamos el guardado de los cambios en la comunidad antes de contar
+            comunidadRepository.save(comunidad);
         }
 
-        // Volvemos a buscar la comunidad (ahora ya sin ese miembro) para mandársela a React
-        Comunidad comunidadActualizada = comunidadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
-        
-        return ResponseEntity.ok(comunidadActualizada);
+        if (comunidad.getMiembros().isEmpty()) {
+            comunidadRepository.delete(comunidad);
+            return ResponseEntity.ok("Grupo eliminado por quedar vacío");
+        }
+
+        return ResponseEntity.ok(comunidad);
     }
 
     @DeleteMapping("/mensajes/{idMensaje}")
@@ -333,6 +288,81 @@ public class ComunidadController {
             MensajeComunidad actualizado = mensajeComunidadRepository.save(msg);
             return ResponseEntity.ok(actualizado);
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // EXPULSAR MIEMBRO
+    @DeleteMapping("/{idComunidad}/expulsar/{idUsuario}")
+    @Transactional
+    public ResponseEntity<?> expulsarMiembro(@PathVariable Long idComunidad, @PathVariable Long idUsuario) {
+        // Buscamos la relación
+        Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
+                .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idUsuario);
+        
+        if (relacion.isPresent()) {
+            usuarioComunidadRepository.delete(relacion.get());
+            usuarioComunidadRepository.flush();
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // CEDER ADMINISTRACIÓN
+    @PutMapping("/{idComunidad}/cambiar-admin/{idUsuarioNuevo}")
+    @Transactional
+    public ResponseEntity<?> cederAdministracion(@PathVariable Long idComunidad, @PathVariable Long idUsuarioNuevo) {
+        // Buscamos al admin actual (el que hace la petición)
+        List<UsuarioComunidad> miembros = usuarioComunidadRepository.findByComunidadIdComunidad(idComunidad);
+        
+        UsuarioComunidad adminActual = miembros.stream()
+                .filter(m -> "admin".equals(m.getRol()))
+                .findFirst()
+                .orElse(null);
+
+        UsuarioComunidad nuevoAdmin = miembros.stream()
+                .filter(m -> m.getUsuario().getIdUsuario().equals(idUsuarioNuevo))
+                .findFirst()
+                .orElse(null);
+
+        if (adminActual != null && nuevoAdmin != null) {
+            // Degradamos al actual
+            adminActual.setRol("miembro");
+            usuarioComunidadRepository.save(adminActual);
+            
+            // Ascendemos al nuevo
+            nuevoAdmin.setRol("admin");
+            usuarioComunidadRepository.save(nuevoAdmin);
+            
+            return ResponseEntity.ok().build();
+        }
+        
+        return ResponseEntity.badRequest().body("No se pudo realizar el cambio de roles");
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> eliminarComunidad(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
+        Long idUsuarioActual = payload.get("idUsuario");
+
+        Comunidad comunidad = comunidadRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+
+        // Buscamos al usuario para ver su rol global
+        Usuario usuario = usuarioRepository.findById(idUsuarioActual)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Comprobar permisos
+        boolean esAdminSistema = "ADMIN".equals(usuario.getRol());
+        boolean esAdminGrupo = usuarioComunidadRepository
+                .findByComunidadIdComunidadAndUsuarioIdUsuario(id, idUsuarioActual)
+                .map(uc -> "admin".equals(uc.getRol()))
+                .orElse(false);
+
+        if (esAdminSistema || esAdminGrupo) {
+            comunidadRepository.delete(comunidad);
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para eliminar este grupo");
     }
 
 }

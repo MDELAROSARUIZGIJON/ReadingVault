@@ -1,5 +1,6 @@
 package com.readingvault.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,6 @@ public interface UsuarioComunidadRepository extends JpaRepository<UsuarioComunid
     boolean existsByComunidadIdComunidadAndUsuarioIdUsuario(Long idComunidad, Long idUsuario);
 
     Optional<UsuarioComunidad> findByComunidadIdComunidadAndUsuarioIdUsuario(Long idComunidad, Long idUsuario);
+
+    List<UsuarioComunidad> findByComunidadIdComunidad(Long idComunidad);
 }

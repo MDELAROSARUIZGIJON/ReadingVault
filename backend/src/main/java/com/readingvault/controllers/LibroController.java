@@ -172,29 +172,33 @@ public class LibroController {
 
     // Búsqueda única
     @GetMapping("/buscar-unico")
-    public ResponseEntity<?> buscarUnico(
-            @RequestParam(required = false) String isbn,
-            @RequestParam(required = false) String titulo, 
-            @RequestParam(required = false) String autor) {
+    public ResponseEntity<?> buscarUnico(@RequestParam(required = false) String isbn,
+                                        @RequestParam(required = false) String titulo, 
+                                        @RequestParam(required = false) String autor) {
         
-        if (isbn != null && !isbn.isEmpty()) {
+        // Búsqueda por ISBN (Solo si es válido y no es "null")
+        if (isbn != null && !isbn.isEmpty() && !isbn.equals("null")) {
             Optional<Libro> porIsbn = libroRepository.findByIsbn(isbn);
             if (porIsbn.isPresent()) return ResponseEntity.ok(mapearLibroLocal(porIsbn.get()));
         }
 
+        // Búsqueda por título/autor
         if (titulo != null && autor != null) {
             Optional<Libro> porDatos = libroRepository.findByTituloAndAutor(titulo, autor);
             if (porDatos.isPresent()) return ResponseEntity.ok(mapearLibroLocal(porDatos.get()));
         }
 
-        String queryBusqueda = (isbn != null && !isbn.isEmpty()) ? "isbn:" + isbn : titulo + " " + autor;
+        // Búsqueda externa con FILTRADO
+        String queryBusqueda = (isbn != null && !isbn.isEmpty() && !isbn.equals("null")) ? "isbn:" + isbn : titulo + " " + autor;
         List<LibroExternoDTO> resultados = googleBooksService.buscarLibros(queryBusqueda, 1, "relevance");
         
-        if (resultados != null && !resultados.isEmpty()) {
-            return ResponseEntity.ok(mapearLibro(resultados.get(0)));
-        }
-        
-        return ResponseEntity.notFound().build();
+        // Solo devolvemos el primer libro si tiene ISBN
+        return resultados.stream()
+                .filter(l -> l.getIsbn() != null && !l.getIsbn().isEmpty())
+                .findFirst()
+                .map(this::mapearLibro)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Endpoint para asegurar que un libro visto exista en BD y actualizar datos faltantes
@@ -310,6 +314,35 @@ public class LibroController {
         }
         
         return ResponseEntity.notFound().build();
+    }
+
+    // BÚSQUEDA PRECISA PARA GRUPOS
+    @GetMapping("/buscar-exacto")
+    public List<Map<String, Object>> buscarExacto(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "1") int pagina) {
+
+        String queryLimpia = q.trim();
+        int tamañoPagina = 12;
+
+        if (queryLimpia.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Buscamos en tu repositorio local (reutilizando el método que ya tienes en LibroController)
+        List<Libro> locales = libroRepository.findByTituloContainingIgnoreCaseOrAutorContainingIgnoreCaseOrGenerosContainingIgnoreCase(
+                queryLimpia, queryLimpia, queryLimpia
+        );
+
+        // Aplicamos los filtros estrictos que querías (Evitar datos corruptos antiguos)
+        return locales.stream()
+                .filter(libro -> libro.getIsbn() != null && !libro.getIsbn().trim().isEmpty()
+                        && libro.getPaginas() != null && libro.getPaginas() > 0
+                        && libro.getAutor() != null && !libro.getAutor().toLowerCase().contains("desconocido"))
+                .skip((long) (pagina - 1) * tamañoPagina)
+                .limit(tamañoPagina)
+                .map(this::mapearLibroLocal) // Usamos tu mapeador local nativo
+                .collect(Collectors.toList());
     }
 
     // Precarga

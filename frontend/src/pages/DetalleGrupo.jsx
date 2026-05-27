@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Swal from 'sweetalert2';
 import "../assets/css/detalleGrupo.css";
 
 export default function DetalleGrupo() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [grupo, setGrupo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
   const [nuevoMensaje, setNuevoMensaje] = useState("");
@@ -13,6 +14,7 @@ export default function DetalleGrupo() {
 
   // Estados para el Modal de Progreso
   const [showModalProgreso, setShowModalProgreso] = useState(false);
+  const [errorProgreso, setErrorProgreso] = useState("");
 
   // Estados para el Modal de Cambiar Libro
   const [showModalLibro, setShowModalLibro] = useState(false);
@@ -23,8 +25,13 @@ export default function DetalleGrupo() {
   const [idMensajeEditando, setIdMensajeEditando] = useState(null);
   const [textoEditando, setTextoEditando] = useState("");
 
+  const [progreso, setProgreso] = useState({ pagina: 0, total: 0, nota: "" });
+
   const sesion = JSON.parse(localStorage.getItem("usuario"));
   const token = localStorage.getItem("token");
+
+  // Imagen de avatar por defecto si el usuario no tiene una establecida
+  const FOTO_DEFECTO = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
   // Cargar datos del grupo y sus mensajes
   useEffect(() => {
@@ -54,32 +61,44 @@ export default function DetalleGrupo() {
   }, [id, token, sesion.idUsuario]);
 
   const manejarMembresia = async () => {
+    // ESCUDO DE SEGURIDAD PARA EL ADMIN
+    if (estaUnido && soyAdmin) {
+      const cantidadMiembros = grupo.miembros?.length || 0;
+      
+      // Si hay más gente en el grupo, le prohibimos salir directamente
+      if (cantidadMiembros > 1) {
+        Swal.fire({
+          title: "Acción denegada",
+          text: "No puedes abandonar el club siendo el Administrador. Debes ceder el rol de admin a otro miembro antes de salir.",
+          icon: "error",
+          confirmButtonColor: "#7c4d3a"
+        });
+        return;
+      }
+    }
+
     const endpoint = estaUnido ? "salir" : "unirse";
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/comunidades/${id}/${endpoint}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ idUsuario: sesion.idUsuario }),
+      const res = await fetch(`http://localhost:8080/api/comunidades/${id}/${endpoint}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ idUsuario: sesion.idUsuario }),
+      });
 
       if (res.ok) {
-        // Recibimos la comunidad actualizada directamente del backend
         const comunidadActualizada = await res.json();
 
-        // Usamos una función de actualización para asegurar que React vea el cambio
-        setGrupo((prev) => ({ ...comunidadActualizada }));
+        setGrupo(comunidadActualizada);
         setEstaUnido(!estaUnido);
 
-        console.log(
-          "Nuevo número de miembros:",
-          comunidadActualizada.miembros?.length,
+        const esMiembro = comunidadActualizada.miembros?.some(
+          (m) => m.usuario.idUsuario === sesion.idUsuario
         );
+        setEstaUnido(esMiembro);
+
       } else {
         const errorText = await res.text();
         console.error("Error del servidor:", errorText);
@@ -89,59 +108,136 @@ export default function DetalleGrupo() {
     }
   };
 
+  const handleEliminarGrupo = () => {
+    Swal.fire({
+      title: '¿Eliminar club de lectura?',
+      text: "Esta acción borrará el grupo, los mensajes y el progreso de todos los miembros. ¡No se puede deshacer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#7c4d3a',
+      confirmButtonText: 'Sí, eliminar grupo'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`http://localhost:8080/api/comunidades/${id}`, {
+            method: "DELETE",
+            headers: { 
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ idUsuario: sesion.idUsuario })
+          });
+          
+          if (res.ok) {
+            Swal.fire('Eliminado', 'El club ha sido borrado.', 'success');
+            navigate('/comunidad');
+          } else {
+             const err = await res.text();
+             console.error("Error al borrar:", err);
+             Swal.fire('Error', 'No tienes permisos o hubo un problema.', 'error');
+          }
+        } catch (error) {
+          Swal.fire('Error', 'No se pudo eliminar el grupo.', 'error');
+        }
+      }
+    });
+  };
+
+  // APUNTA AL ENDPOINT DE BÚSQUEDA EXACTA
   const handleBuscarLibro = async (e) => {
     const texto = e.target.value;
     setBusquedaLibro(texto);
 
-    if (texto.length < 3) {
+    if (texto.trim().length < 3) {
       setResultadosLibros([]);
       return;
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/comunidades/buscar-libro-externo?q=${encodeURIComponent(texto)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = `http://localhost:8080/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
+      
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
       if (response.ok) {
-        const dataGoogle = await response.json();
+        const librosEncontrados = await response.json();
         
-        if (dataGoogle.items) {
-          const librosLimpios = dataGoogle.items.map(item => {
-            const info = item.volumeInfo;
-            return {
-              titulo: info.title || "Título desconocido",
-              
-              autor: info.authors ? info.authors[0] : "Autor desconocido", 
-              portada: info.imageLinks ? info.imageLinks.thumbnail : "https://via.placeholder.com/40x60?text=Sin+Foto",
-              paginas: info.pageCount || 0
-            };
-          });
-          
-          setResultadosLibros(librosLimpios);
-        } else {
-          setResultadosLibros([]); // No se encontró nada
-        }
+        const librosLimpios = librosEncontrados.map(libro => ({
+          idLibro: libro.idLibro || null, 
+          titulo: libro.titulo || "Título desconocido",
+          autor: libro.autor || "Autor desconocido", 
+          portada: libro.fotoPortada || libro.portada || "https://via.placeholder.com/40x60?text=Sin+Foto",
+          paginas: libro.paginas || libro.numPaginas || 0
+        }));
+        
+        setResultadosLibros(librosLimpios);
       }
     } catch (error) {
-      console.error("Error buscando libros por nuestra cuenta:", error);
+      console.error("Error buscando libros con el filtro exacto:", error);
+    }
+  };
+
+  const handleAbandonarGrupo = async () => {
+    const miembros = grupo.miembros || [];
+    const esUltimoMiembro = miembros.length === 1;
+
+    if (esUltimoMiembro) {
+      // Si es el último, pedir confirmación para eliminar todo el grupo
+      const result = await Swal.fire({
+        title: '¿Eres el último miembro?',
+        text: "Al ser el único usuario, el grupo se eliminará automáticamente. ¿Continuar?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#7c4d3a',
+        confirmButtonText: 'Sí, abandonar y eliminar grupo'
+      });
+
+      if (result.isConfirmed) {
+        // Llamamos directamente a la lógica de eliminación total
+        handleEliminarGrupo(); 
+      }
+    } else {
+      // Si hay más miembros, ejecución normal de "salir"
+      await ejecutarAbandonar();
+    }
+  };
+
+  const ejecutarAbandonar = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/comunidades/${id}/salir`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ idUsuario: sesion.idUsuario }),
+      });
+
+      if (res.ok) {
+        // Redirigir al usuario fuera del grupo después de salir
+        navigate('/comunidad');
+      } else {
+        Swal.fire('Error', 'No se pudo abandonar el grupo.', 'error');
+      }
+    } catch (error) {
+      console.error("Error al abandonar:", error);
     }
   };
 
   // Función para confirmar el cambio de libro
   const confirmarCambioLibro = async (libroElegido) => {
-    const totalPaginas = libroElegido.paginas || libroElegido.numPaginas || libroElegido.pageCount || 0;
-    // Si viene de Google Books, no tiene idLibro, le pasamos los datos para que el backend lo cree (como hicimos en crear grupo)
+    const totalPaginas = libroElegido.paginas || 0;
     const payload = libroElegido.idLibro
       ? { idLibro: libroElegido.idLibro }
       : {
           tituloLibro: libroElegido.titulo,
           autorLibro: libroElegido.autor,
-          portadaLibro: libroElegido.portada || libroElegido.fotoPortada,
-          paginasLibro: totalPaginas 
+          portadaLibro: libroElegido.portada,
+          paginasLibro: totalPaginas,
+          isbnLibro: libroElegido.isbn
         };
 
     try {
@@ -159,9 +255,9 @@ export default function DetalleGrupo() {
 
       if (res.ok) {
         const comunidadActualizada = await res.json();
-        setGrupo(comunidadActualizada); // Actualizamos la vista al instante
-        setShowModalLibro(false); // Cerramos el modal
-        setBusquedaLibro(""); // Limpiamos el buscador
+        setGrupo(comunidadActualizada); 
+        setShowModalLibro(false); 
+        setBusquedaLibro(""); 
         setResultadosLibros([]);
       }
     } catch (error) {
@@ -191,13 +287,8 @@ export default function DetalleGrupo() {
       );
 
       if (res.ok) {
-        // El backend nos devuelve SOLO el mensaje que acabamos de crear
         const mensajeGuardado = await res.json();
-
-        // Lo colocamos el primero de la lista conservando los que ya teníamos
         setMensajes((prevMensajes) => [mensajeGuardado, ...prevMensajes]);
-        
-        // Limpiamos el cuadro de texto para poder seguir escribiendo
         setNuevoMensaje("");
       }
     } catch (error) {
@@ -206,7 +297,6 @@ export default function DetalleGrupo() {
   };
 
   const handleBorrarMensaje = (idMensaje) => {
-    // Lanzamos el SweetAlert
     Swal.fire({
       title: '¿Borrar comentario?',
       text: "Esta acción no se puede deshacer.",
@@ -218,7 +308,6 @@ export default function DetalleGrupo() {
       cancelButtonText: 'Cancelar',
       reverseButtons: true              
     }).then(async (result) => {
-      
       if (result.isConfirmed) {
         try {
           const res = await fetch(`http://localhost:8080/api/comunidades/mensajes/${idMensaje}`, {
@@ -227,10 +316,7 @@ export default function DetalleGrupo() {
           });
           
           if (res.ok) {
-            // Lo eliminamos de la lista en React
             setMensajes(mensajes.filter(m => m.idMensaje !== idMensaje));
-            
-            //  mini alert de éxito que desaparece solo en 1.5 segundos
             Swal.fire({
               title: '¡Borrado!',
               text: 'Tu comentario ha desaparecido.',
@@ -260,7 +346,6 @@ export default function DetalleGrupo() {
       });
       if (res.ok) {
         const msgActualizado = await res.json();
-        // Actualizamos el mensaje editado dentro del array conservando el orden
         setMensajes(mensajes.map(m => m.idMensaje === idMensaje ? msgActualizado : m));
         setIdMensajeEditando(null);
       }
@@ -269,11 +354,44 @@ export default function DetalleGrupo() {
     }
   };
 
-  // Dentro del componente DetalleGrupo
-  const [showModal, setShowModal] = useState(false);
-  const [progreso, setProgreso] = useState({ pagina: 0, total: 0, nota: "" });
+  // Controlador de cambio de página con validación semántica en tiempo real
+  const handleCambioPagina = (e) => {
+    const valor = parseInt(e.target.value) || 0;
+    const maxPaginas = progreso.total;
 
+    if (valor < 0) {
+      setErrorProgreso("La página no puede ser menor que 0.");
+    } else if (valor > maxPaginas) {
+      setErrorProgreso(`No puedes superar las ${maxPaginas} páginas del libro.`);
+    } else if (progreso.nota.length > 0 && progreso.nota.trim().length < 5) {
+      setErrorProgreso("La nota o capítulo debe tener al menos 5 caracteres reales.");
+    } else {
+      setErrorProgreso(""); 
+    }
+
+    setProgreso({ ...progreso, pagina: e.target.value });
+  };
+
+  // Manejador del cambio de la nota opcional con validación de longitud mínima
+  const handleCambioNota = (e) => {
+    const texto = e.target.value;
+    const valorPag = parseInt(progreso.pagina) || 0;
+
+    if (texto.length > 0 && texto.trim().length < 5) {
+      setErrorProgreso("La nota o capítulo debe tener al menos 5 caracteres reales.");
+    } else if (valorPag < 0 || valorPag > progreso.total) {
+      setErrorProgreso(`No puedes superar las ${progreso.total} páginas del libro.`);
+    } else {
+      setErrorProgreso("");
+    }
+
+    setProgreso({ ...progreso, nota: texto });
+  };
+
+  // Guardar progreso validado con Toast de notificación elegante
   const guardarProgreso = async () => {
+    if (errorProgreso || progreso.pagina === "") return;
+
     const res = await fetch(
       `http://localhost:8080/api/comunidades/${id}/actualizar-progreso`,
       {
@@ -288,7 +406,24 @@ export default function DetalleGrupo() {
     if (res.ok) {
       const data = await res.json();
       setGrupo(data);
-      setShowModal(false);
+      setShowModalProgreso(false);
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+      });
+
+      Toast.fire({
+        icon: 'success',
+        title: 'Progreso guardado correctamente'
+      });
     }
   };
 
@@ -299,7 +434,6 @@ export default function DetalleGrupo() {
 
   const miMembresia = grupo.miembros?.find(m => m.usuario.idUsuario === sesion.idUsuario);
   const soyAdmin = miMembresia?.rol === "admin";
-
 
   return (
     <div className="detalle-grupo-bg">
@@ -312,23 +446,28 @@ export default function DetalleGrupo() {
       >
         <div className="container h-100 d-flex flex-column justify-content-end pb-5">
           <div className="d-flex justify-content-between align-items-end">
-            <div className="text-white">
+            <div className="texto-header-container">
               <h1 className="display-3 fw-bold mb-0 titulo-comunidad">{grupo.nombre}</h1>
-              <p className="lead opacity-75 mb-2">{grupo.descripcion}</p>
-              <div className="d-flex align-items-center gap-2 opacity-90">
-                <i className="bi bi-people-fill"></i>
-                <span>
-                  {grupo.miembros ? grupo.miembros.length : 0} lectores en este
-                  club
-                </span>
+              <p className="lead mb-2">{grupo.descripcion}</p>
+              
+              <div className="d-flex align-items-center gap-2">
+                <Link 
+                  to={`/comunidad/${id}/miembros`} 
+                  className="text-white text-decoration-none"
+                  title="Ver lista de miembros"
+                >
+                  <i className="bi bi-people-fill me-2"></i>
+                  {grupo.miembros?.length || 0} {grupo.miembros?.length === 1 ? "miembro" : "miembros"}
+                </Link>
               </div>
             </div>
-            <button
-              className={`btn-membresia ${estaUnido ? "btn-salir" : "btn-unirse"}`}
-              onClick={manejarMembresia}
-            >
-              {estaUnido ? "Salir del grupo" : "¡Unirme!"}
-            </button>
+
+           <button
+            className={`btn-membresia ${estaUnido ? "btn-salir" : "btn-unirse"}`}
+            onClick={estaUnido ? handleAbandonarGrupo : manejarMembresia}
+          >
+            {estaUnido ? "Salir del grupo" : "¡Unirme!"}
+          </button>
           </div>
         </div>
       </header>
@@ -341,20 +480,28 @@ export default function DetalleGrupo() {
               <h5 className="fw-bold mb-4">
                 <i className="bi bi-book me-2"></i>Lectura actual
               </h5>
-              
               {grupo.libro ? (
                 <div className="text-center">
-                  <img src={grupo.libro.fotoPortada} alt="Libro" className="img-libro-detalle mb-3" />
-                  <h4 className="mb-1">{grupo.libro.titulo}</h4>
-                  <p className="text-muted small mb-4">por {grupo.libro.autor}</p>
+                  <div 
+                    onClick={() => navigate(`/libro/${grupo.libro.isbn}`)}
+                    className="enlace-libro-detalle"
+                    style={{ cursor: "pointer" }}
+                    title={`Ver detalles de ${grupo.libro.titulo}`}
+                  >
+                    <img src={grupo.libro.fotoPortada} alt={grupo.libro.titulo} className="img-libro-detalle mb-3" />
+                    <h4 className="mb-1 libro-clicable-titulo">{grupo.libro.titulo}</h4>
+                    <p className="text-muted small mb-4">por {grupo.libro.autor}</p>
+                  </div>
 
-                  {/* Estadísticas de Lectura (El lápiz ya está protegido) */}
+                  {/* Estadísticas de Lectura */}
                   <div className="progreso-lectura text-start p-3 rounded-4 mb-3 shadow-sm">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <span className="small text-muted">Progreso:</span>
                       {soyAdmin && (
                         <button className="btn btn-sm btn-outline-primary border-0" onClick={() => {
-                          setProgreso({ pagina: grupo.paginaActual || 0, total: grupo.libro?.paginas || grupo.totalPaginas || 0, nota: grupo.notaProgreso || "" });
+                          const maxPaginas = grupo.libro?.paginas || grupo.totalPaginas || 0;
+                          setProgreso({ pagina: grupo.paginaActual || 0, total: maxPaginas, nota: grupo.notaProgreso || "" });
+                          setErrorProgreso("");
                           setShowModalProgreso(true);
                         }}>
                           <i className="bi bi-pencil"></i>
@@ -369,21 +516,22 @@ export default function DetalleGrupo() {
                         {grupo.notaProgreso ? `"${grupo.notaProgreso}"` : "Sin anotaciones en este capítulo todavía."}
                       </span>
                     </div>
-                    
                   </div>
 
-                  {/* BOTÓN 1: Cuando SÍ hay un libro leyendo */}
                   {soyAdmin && (
                     <button className="btn-nueva-lectura w-100 mt-3" onClick={() => setShowModalLibro(true)}>
                       <i className="bi bi-journal-plus me-2"></i>Cambiar Lectura
+                    </button>
+                  )}
+                  {soyAdmin && (
+                    <button className="btn btn-outline-danger w-100 mt-3" onClick={handleEliminarGrupo}>
+                      <i className="bi bi-trash-fill me-2"></i>Eliminar Grupo
                     </button>
                   )}
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <p className="text-muted">No hay lectura activa.</p>
-                  
-                  {/* BOTÓN 2: Cuando NO hay ningún libro (¡Este se suele olvidar!) */}
                   {soyAdmin && (
                     <button className="btn-nueva-lectura w-100" onClick={() => setShowModalLibro(true)}>
                       Elegir Libro
@@ -404,7 +552,7 @@ export default function DetalleGrupo() {
                 <form onSubmit={enviarMensaje} className="mb-5">
                   <div className="d-flex gap-3">
                     <img
-                      src={sesion.fotoPerfil}
+                      src={sesion.fotoPerfil || FOTO_DEFECTO}
                       alt="Tú"
                       className="rounded-circle"
                       style={{ width: "45px", height: "45px", objectFit: "cover" }}
@@ -438,11 +586,13 @@ export default function DetalleGrupo() {
                   mensajes.map((msg) => {
                     const esMio = msg.usuario.idUsuario == sesion.idUsuario;
                     const estaEditandoEste = idMensajeEditando === msg.idMensaje;
+                    const esAdminGlobal = sesion.rol === "ADMIN" || sesion.rol === "admin";
+                    const puedeBorrar = esMio || soyAdmin || esAdminGlobal;
 
                     return (
                       <div key={msg.idMensaje} className="mensaje-item d-flex gap-3 mb-4">
                         <img
-                          src={msg.usuario.fotoPerfil}
+                          src={msg.usuario.fotoPerfil || FOTO_DEFECTO}
                           alt={msg.usuario.nombreUsuario}
                           className="rounded-circle"
                           style={{ width: "45px", height: "45px", objectFit: "cover" }}
@@ -450,30 +600,34 @@ export default function DetalleGrupo() {
                         <div className="mensaje-contenido p-3 rounded-4 bg-light flex-grow-1">
                           <div className="d-flex justify-content-between align-items-center mb-2">
                             <div>
-                              <span className="fw-bold me-2 mensaje-usuario">
-                                {msg.usuario.nombreUsuario}
-                              </span>
+                              <span className="fw-bold me-2 mensaje-usuario">{msg.usuario.nombreUsuario}</span>
                               <small className="text-muted">{msg.fecha}</small>
                             </div>
 
-                            {/* Mostrar botones de editar/borrar solo si el mensaje es del usuario logueado */}
-                            {esMio && !estaEditandoEste && (
+                            {/* Botones de acción controlados por permisos */}
+                            {(esMio || puedeBorrar) && (
                               <div className="d-flex gap-2">
-                                <button 
-                                  className="btn btn-sm btn-link text-secondary p-0 border-0"
-                                  onClick={() => {
-                                    setIdMensajeEditando(msg.idMensaje);
-                                    setTextoEditando(msg.contenido);
-                                  }}
-                                >
-                                  <i className="bi bi-pencil-square"></i>
-                                </button>
-                                <button 
-                                  className="btn btn-sm btn-link text-danger p-0 border-0"
-                                  onClick={() => handleBorrarMensaje(msg.idMensaje)}
-                                >
-                                  <i className="bi bi-trash3"></i>
-                                </button>
+                                {/* Editar solo si es suyo */}
+                                {esMio && !estaEditandoEste && (
+                                  <button 
+                                    className="btn btn-sm btn-link text-secondary p-0 border-0"
+                                    onClick={() => {
+                                      setIdMensajeEditando(msg.idMensaje);
+                                      setTextoEditando(msg.contenido);
+                                    }}
+                                  >
+                                    <i className="bi bi-pencil-square"></i>
+                                  </button>
+                                )}
+                                {/* Borrar si es suyo o es admin */}
+                                {puedeBorrar && (
+                                  <button 
+                                    className="btn btn-sm btn-link text-danger p-0 border-0"
+                                    onClick={() => handleBorrarMensaje(msg.idMensaje)}
+                                  >
+                                    <i className="bi bi-trash3"></i>
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -487,12 +641,8 @@ export default function DetalleGrupo() {
                                 rows="2"
                               />
                               <div className="d-flex gap-2 justify-content-end">
-                                <button className="btn btn-sm btn-secondary rounded-3" onClick={() => setIdMensajeEditando(null)}>
-                                  Cancelar
-                                </button>
-                                <button className="btn btn-sm text-white rounded-3" style={{ backgroundColor: '#7c4d3a' }} onClick={() => handleGuardarEdicion(msg.idMensaje)}>
-                                  Guardar
-                                </button>
+                                <button className="btn btn-sm btn-secondary rounded-3" onClick={() => setIdMensajeEditando(null)}>Cancelar</button>
+                                <button className="btn btn-sm text-white rounded-3" style={{ backgroundColor: '#7c4d3a' }} onClick={() => handleGuardarEdicion(msg.idMensaje)}>Guardar</button>
                               </div>
                             </div>
                           ) : (
@@ -512,6 +662,7 @@ export default function DetalleGrupo() {
           </div>
         </div>
       </div>
+
       {/* MODAL PARA CAMBIAR DE LIBRO */}
       {showModalLibro && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -533,17 +684,16 @@ export default function DetalleGrupo() {
                 />
               </div>
 
-              {/* Resultados desplegables */}
               {resultadosLibros.length > 0 && (
                 <ul className="list-group position-absolute w-100 shadow mt-1 bg-white" style={{ zIndex: 1060, maxHeight: '250px', overflowY: 'auto' }}>
-                  {resultadosLibros.map(libro => (
+                  {resultadosLibros.map((libro, idx) => (
                     <li 
-                      key={libro.idLibro || Math.random()} 
+                      key={libro.idLibro || idx} 
                       className="list-group-item list-group-item-action d-flex align-items-center gap-3 p-2" 
                       onClick={() => confirmarCambioLibro(libro)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img src={libro.portada || libro.fotoPortada} alt="Portada" style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                      <img src={libro.portada} alt="Portada" style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
                       <div>
                         <span className="fw-bold d-block text-dark" style={{ fontSize: '0.9rem' }}>{libro.titulo}</span>
                         <span className="text-muted small">{libro.autor}</span>
@@ -560,6 +710,7 @@ export default function DetalleGrupo() {
           </div>
         </div>
       )}
+
       {/* MODAL PARA ACTUALIZAR PROGRESO */}
       {showModalProgreso && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -574,13 +725,19 @@ export default function DetalleGrupo() {
               <div className="input-group">
                 <input 
                   type="number" 
-                  className="form-control bg-light" 
+                  className={`form-control ${errorProgreso ? 'border-danger' : 'bg-light'}`} 
                   min="0"
+                  max={progreso.total}
                   value={progreso.pagina}
-                  onChange={(e) => setProgreso({...progreso, pagina: e.target.value})}
+                  onChange={handleCambioPagina}
                 />
                 <span className="input-group-text bg-light text-muted">de {progreso.total}</span>
               </div>
+              {errorProgreso && (
+                <div className="text-danger small fw-bold mt-1">
+                  <i className="bi bi-exclamation-circle me-1"></i>{errorProgreso}
+                </div>
+              )}
             </div>
 
             <div className="mb-4">
@@ -591,11 +748,19 @@ export default function DetalleGrupo() {
                 placeholder="Ej: Capítulo 5 - La Revelación"
                 maxLength="50"
                 value={progreso.nota}
-                onChange={(e) => setProgreso({...progreso, nota: e.target.value})}
+                onChange={handleCambioNota}
               />
             </div>
             
-            <button className="btn w-100 text-white fw-bold" style={{ backgroundColor: '#7c4d3a' }} onClick={guardarProgreso}>
+            <button 
+              className="btn w-100 text-white fw-bold" 
+              style={{ 
+                backgroundColor: errorProgreso ? '#a0a0a0' : '#7c4d3a',
+                cursor: errorProgreso ? 'not-allowed' : 'pointer'
+              }} 
+              onClick={guardarProgreso}
+              disabled={!!errorProgreso || progreso.pagina === ""}
+            >
               Guardar progreso
             </button>
           </div>

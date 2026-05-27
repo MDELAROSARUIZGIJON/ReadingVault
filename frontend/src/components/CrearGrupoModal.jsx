@@ -22,31 +22,31 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
     setFormData({ ...formData, foto: e.target.files[0] });
   };
 
-  // --- ESTA ES LA FUNCIÓN QUE BUSCA EN EL BACKEND DE PEDRO ---
   const handleBuscarLibro = async (e) => {
     const texto = e.target.value;
     setBusquedaLibro(texto);
 
-    // Si escribe menos de 3 letras, limpiamos la lista
-    if (texto.length < 3) {
-      setResultadosLibros([]);
-      return;
+    if (texto.trim().length < 3) {
+        setResultadosLibros([]);
+        return;
     }
 
     const token = localStorage.getItem("token");
     try {
-      // Llamamos al endpoint de búsqueda
-      const response = await fetch(`http://localhost:8080/api/libros/buscar?q=${encodeURIComponent(texto)}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });     
-      if (response.ok) {       
-        const librosEncontrados = await response.json();
-        setResultadosLibros(librosEncontrados);
-      }
+        const url = `http://localhost:8080/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
+        
+        const response = await fetch(url, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });    
+        
+        if (response.ok) {        
+            const librosEncontrados = await response.json();
+            setResultadosLibros(librosEncontrados);
+        }
     } catch (error) {
-      console.error("Error buscando libros:", error);
+        console.error("Error buscando en BD:", error);
     }
-  };
+};
 
   const seleccionarLibro = (libro) => {
     setLibroSeleccionado(libro);
@@ -60,51 +60,40 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    const sesion = JSON.parse(localStorage.getItem("usuario"));
-
-    if (!sesion) {
-        alert("Debes iniciar sesión para crear un grupo.");
+    
+    // Si el usuario no ha seleccionado un libro de la lista, cortamos
+    if (!libroSeleccionado || !libroSeleccionado.idLibro) {
+        alert("Por favor, selecciona un libro válido.");
         return;
     }
+
+    const token = localStorage.getItem("token");
+    const sesion = JSON.parse(localStorage.getItem("usuario"));
 
     const dataToSend = new FormData();
     dataToSend.append("nombre", formData.nombre);
     dataToSend.append("descripcion", formData.descripcion);
     dataToSend.append("idUsuario", sesion.idUsuario);
+    dataToSend.append("idLibro", libroSeleccionado.idLibro);
     if (formData.foto) dataToSend.append("foto", formData.foto);
-    
-   
-   if (libroSeleccionado) {
-        const idDelLibro = libroSeleccionado.idLibro || libroSeleccionado.id;
-        
-        if (idDelLibro) {
-            // Si el libro tiene ID (es local), mandamos solo el ID
-            dataToSend.append("idLibro", idDelLibro);
-        } else {
-            // Si viene de Google Books, mandamos sus datos para que el backend lo registre solo
-            dataToSend.append("tituloLibro", libroSeleccionado.titulo || "");
-            dataToSend.append("autorLibro", libroSeleccionado.autor || "");
-            dataToSend.append("portadaLibro", libroSeleccionado.portada || libroSeleccionado.fotoPortada || "");
-        }
-    }
 
     try {
-      const response = await fetch("http://localhost:8080/api/comunidades/crear", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: dataToSend
-      });
+        const response = await fetch("http://localhost:8080/api/comunidades/crear", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: dataToSend
+        });
 
-      if (response.ok) {
-        const comunidadCreada = await response.json();
-        onClose(); 
-        if (onGrupoCreado) onGrupoCreado();
-      } else {
-        alert("Hubo un error al crear el grupo.");
-      }
+        if (response.ok) {
+            onClose();
+            setFormData({ nombre: '', descripcion: '', foto: null });
+            setLibroSeleccionado(null);
+            if (onGrupoCreado) onGrupoCreado();
+          } else {
+            alert("Hubo un error al crear el grupo.");
+          }
     } catch (error) {
-      console.error("Error de conexión:", error);
+          console.error("Error de conexión:", error);
     }
   };
 
@@ -163,21 +152,21 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
                       border: '1px solid #e0e0e0'
                     }}
                   >
-                    {resultadosLibros.map(libro => (
+                    {resultadosLibros.map((libro, idx) => (
                       <li 
-                        key={libro.idLibro || libro.isbn || Math.random()} 
+                        key={libro.idLibro || libro.isbn || idx} 
                         className="list-group-item list-group-item-action d-flex align-items-center gap-3" 
                         onClick={() => seleccionarLibro(libro)}
                         style={{ 
                           cursor: 'pointer', 
-                          backgroundColor: '#ffffff', // Forzamos fondo blanco puro
+                          backgroundColor: '#ffffff',
                           border: 'none',
                           borderBottom: '1px solid #f0f0f0',
                           padding: '10px 15px'
                         }}
                       >
                         <img 
-                          src={libro.portada || libro.fotoPortada || "https://via.placeholder.com/40x60"} 
+                          src={libro.portada || libro.fotoPortada || "https://via.placeholder.com/40x60?text=Sin+Portada"} 
                           alt="Portada" 
                           style={{ 
                             width: '45px', 
@@ -189,8 +178,7 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
                         />
                         <div className="d-flex flex-column">
                            <span className="fw-bold text-dark">{libro.titulo}</span>
-                           {/* Añadimos también el autor pequeñito para que quede más profesional */}
-                           <span className="text-muted small">{libro.autor}</span>
+                           <span className="text-muted small">{libro.autor || "Autor Desconocido"}</span>
                         </div>
                       </li>
                     ))}
@@ -201,7 +189,7 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
               <div className="d-flex align-items-center justify-content-between p-2 border rounded" style={{ backgroundColor: '#f8f9fa', borderColor: 'var(--color-verde-oscuro)' }}>
                 <div className="d-flex align-items-center gap-3">
                    <img 
-                      src={libroSeleccionado.portada || libroSeleccionado.fotoPortada} 
+                      src={libroSeleccionado.portada || libroSeleccionado.fotoPortada || "https://via.placeholder.com/40x60?text=Sin+Portada"} 
                       alt="Portada" 
                       style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} 
                    />
