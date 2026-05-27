@@ -1,4 +1,4 @@
-/* tusAmigos.css */
+/* tusAmigos.css y miembros de grupo*/
 
 .tus-amigos-bg {
     background-color: var(--bg-pagina);
@@ -136,4 +136,32 @@
     color: var(--color-verde-oscuro); 
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(214, 122, 110, 0.3); 
+}
+
+/* Botones de acción unificados (Admin, Expulsar, Ver Perfil) */
+.btn-gestion-comunidad {
+    padding: 6px 15px;      /* Exactamente el mismo que el botón original */
+    border-radius: 10px;    /* El mismo radio */
+    font-weight: 600;
+    font-size: 0.85rem;     /* El mismo tamaño de fuente */
+    border: none;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+}
+
+/* Colores específicos manteniendo tu paleta */
+.btn-hacer-admin { background-color: var(--color-amarillo); color: var(--color-verde-oscuro); }
+.btn-expulsar { background-color: var(--color-rojo-vino); }
+.btn-ver-perfil-listado { background-color: var(--color-salmon); color: #ffff; }
+
+/* Hover compartido */
+.btn-gestion-comunidad:hover {
+    background-color: var(--color-amarillo);
+    color: var(--color-verde-oscuro);
+    transform: translateY(-2px);
 }

@@ -31,8 +31,6 @@ export default function Comunidad() {
     } finally {
       setCargando(false);
     }
-
-    
   };
 
   useEffect(() => {

@@ -351,7 +351,7 @@ export default function DetalleLibro() {
                 <div className="small">
                   <strong>{(libro.valoracion || 0).toFixed(1)}</strong> / 5
                   <br />
-                  (({(libro.votos || 0).toLocaleString()} votos))
+                  ({(libro.votos || 0).toLocaleString()} votos)
                 </div>
               </div>
             </div>

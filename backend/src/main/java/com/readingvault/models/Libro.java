@@ -17,6 +17,8 @@ public class Libro {
     private Long idLibro;
     private String titulo;
     private String autor;
+    
+    @Column(nullable = false)
     private String isbn;
     
     @Column(columnDefinition = "TEXT") 

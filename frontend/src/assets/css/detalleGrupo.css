@@ -1,31 +1,63 @@
+/* ESTILOS GENERALES Y ESTRUCTURA */
+
 .detalle-grupo-bg {
     background-color: var(--color-azul-claro);
     min-height: 100vh;
 }
 
-
-
-.grupo-header {
-    height: 350px;
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
+.content-wrapper {
+    margin-top: 80px;
+    padding-bottom: 50px;
 }
 
-.titulo-comunidad {
-    color: var(--color-amarillo) !important; 
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8); /* Sombra oscura para que se lea siempre */
-    letter-spacing: 1px;
+.rounded-4 {
+    border-radius: 1.25rem !important;
 }
 
 .mt-n5 {
     margin-top: -60px !important;
 }
 
-.rounded-4 {
-    border-radius: 1.25rem !important;
+/* CABECERA HERO (GRUPO-HEADER) */
+
+.grupo-header {
+    width: 100%;
+    height: 550px;
+    background-size: contain; /* Asegura que la imagen completa quepa dentro */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #1a1a1a; /* Un gris muy oscuro para que no se vea blanco vacío */
 }
+
+.texto-header-container {
+    background-color: rgba(255, 255, 255, 0.256);
+    backdrop-filter: blur(4px);
+    padding: 20px;
+    border-radius: 15px;
+    display: inline-block;
+    max-width: 80%;
+}
+
+.titulo-comunidad {
+    color: var(--color-amarillo) !important; 
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+.lead {
+    color: #f8f9fa;
+}
+
+.opacity-90 {
+    opacity: 0.9;
+    font-size: 0.95rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: inline-flex !important;
+}
+
+/* BOTONES DE ACCIÓN Y MEMBRESÍA */
 
 .btn-primary-vault {
     background-color: var(--color-salmon);
@@ -38,12 +70,103 @@
 
 .btn-primary-vault:hover {
     background-color: var(--color-amarillo);
-    color: #333; 
+    color: var(--color-verde-oscuro); 
     transform: translateY(-2px);
 }
 
+.btn-nueva-lectura {
+    background-color: var(--color-salmon);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-nueva-lectura:hover {
+    background-color: var(--color-amarillo);
+    color: var(--color-verde-oscuro); 
+    transform: translateY(-2px); 
+}
+
+.btn-membresia {
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+    font-size: 1.1rem;
+}
+
+.btn-unirse {
+    background-color: rgba(155, 196, 188, 0.25);
+    color: var(--color-verde-oscuro);
+}
+
+.btn-unirse:hover {
+    background-color: var(--color-verde-oscuro);
+    color: white;
+}
+
+.btn-salir {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-salir:hover {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* TARJETAS, LECTURA ACTUAL Y NUEVOS HOVERS */
+
+.card-lectura, .card-chat {
+    background: white;
+    border-radius: 25px;
+    border: 1px solid rgba(60, 21, 24, 0.04);
+}
+
+.img-libro-detalle {
+    width: 180px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.progreso-lectura {
+    background-color: rgba(155, 196, 188, 0.05);
+    border: 1px solid rgba(155, 196, 188, 0.2);
+    transition: background-color 0.2s ease;
+}
+
+/* Contenedor interactivo del libro: hace zoom al conjunto sin mover la tarjeta */
+.enlace-libro-detalle {
+    transition: transform 0.3s ease;
+    display: inline-block;
+    width: 100%;
+}
+
+.enlace-libro-detalle:hover {
+    transform: scale(1.04);
+}
+
+
+.enlace-libro-detalle:hover .libro-clicable-titulo {
+    color: var(--color-salmon) !important;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-lectura:hover .progreso-lectura {
+    background-color: rgba(155, 196, 188, 0.12);
+}
+
+/* MURO DE MENSAJES Y CHAT */
+
 .mensaje-contenido {
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     position: relative;
 }
 
@@ -58,98 +181,33 @@
     border-right: 8px solid #f8f9fa;
 }
 
-
-.mensaje-usuario{
-    color: var(--color-verde-oscuro)
+.mensaje-usuario {
+    color: var(--color-verde-oscuro);
 }
 
+/* MODAL DE ACTUALIZAR PROGRESO */
 
-.detalle-grupo-bg {
-    background-color: var(--color-azul-claro); /* Fondo verde muy clarito para que contraste con las tarjetas blancas */
-    min-height: 100vh;
+.modal-overlay input[type="number"]:focus,
+.modal-overlay input[type="text"]:focus {
+    border-color: var(--color-salmon) !important;
+    box-shadow: 0 0 0 0.25rem rgba(224, 122, 95, 0.25) !important; /* Destello sutil del salmón */
 }
 
-.grupo-header {
-    height: 450px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
+.modal-overlay .btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.content-wrapper {
-    margin-top: 80px; /* Aquí bajamos el chat y la lectura */
-    padding-bottom: 50px;
+/* Hover del botón de guardar */
+.modal-overlay .btn:not(:disabled):hover {
+    background-color: var(--color-amarillo) !important;
+    color: var(--color-verde-oscuro) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Botones de Membresía */
-.btn-membresia {
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-weight: bold;
-    border: none;
-    transition: 0.3s;
-    font-size: 1.1rem;
-}
-
-.btn-unirse {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-.btn-unirse:hover {
-    background-color: #bbf7d0;
-}
-
-.btn-salir {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.btn-salir:hover {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-/* Tarjetas */
-.card-lectura, .card-chat {
-    background: white;
-    border-radius: 25px;
-    border: none;
-}
-
-.img-libro-detalle {
-    width: 180px;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-}
-
-.progreso-lectura {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-}
-
-.btn-nueva-lectura {
-    background-color: var(--color-salmon); /* Color marrón ReadingVault */
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 15px;
-    font-weight: 600;
-}
-
-.btn-nueva-lectura:hover {
-    background-color: var(--color-amarillo);
-    color: #333; 
-    transform: translateY(-2px); 
-}
-
-.opacity-90 {
-    opacity: 0.9;
-    font-size: 0.95rem;
-    background: rgba(0, 0, 0, 0.2); /* Un fondo sutil para que resalte más */
-    padding: 5px 12px;
-    border-radius: 20px;
-    display: inline-flex !important;
+a.opacity-90:hover {
+    background: rgba(0, 0, 0, 0.45) !important;
+    transform: scale(1.03);
+    transition: all 0.2s ease;
+    color: var(--color-amarillo) !important;
 }

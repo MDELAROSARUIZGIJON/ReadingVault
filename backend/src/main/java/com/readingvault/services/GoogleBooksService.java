@@ -23,8 +23,6 @@ public class GoogleBooksService {
     public List<LibroExternoDTO> buscarLibros(String query, int pagina, String orderBy) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(GOOGLE_BOOKS_URL);
 
-        // Si la query es un subject, nos aseguramos de que el término vaya entre comillas
-        // Ejemplo: subject:Fiction / Horror -> subject:"Fiction / Horror"
         String queryFinal = query;
         if (query.startsWith("subject:")) {
             String genero = query.replace("subject:", "");
@@ -34,8 +32,6 @@ public class GoogleBooksService {
         builder.queryParam("q", queryFinal);
         builder.queryParam("maxResults", 40); 
         builder.queryParam("startIndex", (pagina - 1) * 12); 
-        
-        // Priorizar español
         builder.queryParam("langRestrict", "es"); 
         builder.queryParam("hl", "es");
 
@@ -51,39 +47,46 @@ public class GoogleBooksService {
 
             List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
-            return items.stream().map(item -> {
-                Map<String, Object> volumeInfo = (Map<String, Object>) item.get("volumeInfo");
-                LibroExternoDTO dto = new LibroExternoDTO();
+            return items.stream()
+                // Solo dejamos pasar los libros que tienen ISBN
+                .filter(item -> {
+                    Map<String, Object> volumeInfo = (Map<String, Object>) item.get("volumeInfo");
+                    if (!volumeInfo.containsKey("industryIdentifiers")) return false;
+                    List<Map<String, String>> ids = (List<Map<String, String>>) volumeInfo.get("industryIdentifiers");
+                    return ids.stream().anyMatch(id -> "ISBN_13".equals(id.get("type")) || "ISBN_10".equals(id.get("type")));
+                })
+                .map(item -> {
+                    Map<String, Object> volumeInfo = (Map<String, Object>) item.get("volumeInfo");
+                    LibroExternoDTO dto = new LibroExternoDTO();
 
-                dto.setTitle(String.valueOf(volumeInfo.getOrDefault("title", "Sin título")));
-                if (volumeInfo.containsKey("authors")) {
-                    dto.setAuthorNames((List<String>) volumeInfo.get("authors"));
-                }
+                    dto.setTitle(String.valueOf(volumeInfo.getOrDefault("title", "Sin título")));
+                    
+                    if (volumeInfo.containsKey("authors")) {
+                        dto.setAuthorNames((List<String>) volumeInfo.get("authors"));
+                    }
 
-                dto.setAverageRating(volumeInfo.containsKey("averageRating") 
-                    ? Double.parseDouble(volumeInfo.get("averageRating").toString()) : 0.0);
-                
-                dto.setRatingsCount(volumeInfo.containsKey("ratingsCount") 
-                    ? (Integer) volumeInfo.get("ratingsCount") : 0);
+                    dto.setAverageRating(volumeInfo.containsKey("averageRating") 
+                        ? Double.parseDouble(volumeInfo.get("averageRating").toString()) : 0.0);
+                    
+                    dto.setRatingsCount(volumeInfo.containsKey("ratingsCount") 
+                        ? (Integer) volumeInfo.get("ratingsCount") : 0);
 
-                dto.setDescription(String.valueOf(volumeInfo.getOrDefault("description", "Sin descripción disponible.")));
+                    dto.setDescription(String.valueOf(volumeInfo.getOrDefault("description", "Sin descripción disponible.")));
 
-                if (volumeInfo.containsKey("pageCount")) {
-                    dto.setPageCount((Integer) volumeInfo.get("pageCount"));
-                }
+                    if (volumeInfo.containsKey("pageCount")) {
+                        dto.setPageCount((Integer) volumeInfo.get("pageCount"));
+                    }
 
-                dto.setPublishedDate(String.valueOf(volumeInfo.getOrDefault("publishedDate", "Fecha desconocida")));
+                    dto.setPublishedDate(String.valueOf(volumeInfo.getOrDefault("publishedDate", "Fecha desconocida")));
 
-                if (volumeInfo.containsKey("categories")) {
-                    dto.setCategories((List<String>) volumeInfo.get("categories"));
-                }
+                    if (volumeInfo.containsKey("categories")) {
+                        dto.setCategories((List<String>) volumeInfo.get("categories"));
+                    }
 
-                // Mejora en la captura de ISBN
-                if (volumeInfo.containsKey("industryIdentifiers")) {
+                    // Captura de ISBN (ahora garantizado por el filtro previo)
                     List<Map<String, String>> ids = (List<Map<String, String>>) volumeInfo.get("industryIdentifiers");
                     for (Map<String, String> id : ids) {
                         String type = id.get("type");
-                        // Priorizamos ISBN_13, pero aceptamos ISBN_10 si no hay otro
                         if ("ISBN_13".equals(type)) {
                             dto.setIsbn(id.get("identifier"));
                             break; 
@@ -91,18 +94,17 @@ public class GoogleBooksService {
                             dto.setIsbn(id.get("identifier"));
                         }
                     }
-                }
 
-                if (volumeInfo.containsKey("imageLinks")) {
-                    Map<String, String> images = (Map<String, String>) volumeInfo.get("imageLinks");
-                    String coverUrl = images.get("thumbnail");
-                    if (coverUrl != null) {
-                        dto.setCoverId(coverUrl.replace("http://", "https://"));
+                    if (volumeInfo.containsKey("imageLinks")) {
+                        Map<String, String> images = (Map<String, String>) volumeInfo.get("imageLinks");
+                        String coverUrl = images.get("thumbnail");
+                        if (coverUrl != null) {
+                            dto.setCoverId(coverUrl.replace("http://", "https://"));
+                        }
                     }
-                }
-                
-                return dto;
-            }).collect(Collectors.toList());
+                    
+                    return dto;
+                }).collect(Collectors.toList());
 
         } catch (Exception e) {
             return List.of();
