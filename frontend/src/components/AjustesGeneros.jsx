@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../assets/css/ajustes.css"; 
-
+//prueba comentario
 // Recibimos onUpdate para sincronizar el estado con el componente padre
 export default function AjustesGeneros({ user, onUpdate }) {
   // Estados

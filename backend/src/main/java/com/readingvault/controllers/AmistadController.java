@@ -23,7 +23,7 @@ import com.readingvault.services.AmistadService;
 @RequestMapping("/api/amistades")
 @CrossOrigin(origins = "*")
 public class AmistadController {
-
+    
     @Autowired
     private AmistadService amistadService;
 
