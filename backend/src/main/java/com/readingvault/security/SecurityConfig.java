@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/bibliotecas/**").authenticated()
                 .requestMatchers("/api/reviews/**").permitAll()
                 .requestMatchers("/api/usuarios/**").permitAll()
+                .requestMatchers( "/api/comunidades").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/bibliotecas/**").authenticated()
                 .requestMatchers("/api/retos/**").authenticated() 

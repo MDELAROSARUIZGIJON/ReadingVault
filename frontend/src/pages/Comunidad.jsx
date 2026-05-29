@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/comunidad.css';
+import Swal from 'sweetalert2';
 import CrearGrupoModal from '../components/CrearGrupoModal';
 
 export default function Comunidad() {
@@ -21,6 +22,32 @@ export default function Comunidad() {
   const sesionStr = localStorage.getItem("usuario");
   const sesion = sesionStr ? JSON.parse(sesionStr) : null;
 
+
+  // FUNCIÓN PARA PROTEGER BOTONES ---
+  const ejecutarAccionProtegida = (accionCallback, mensajeAccion) => {
+    if (!sesion) {
+      // Si no hay sesión, mostramos el SweetAlert
+      Swal.fire({
+        title: "¿Te unes a la lectura?",
+        text: `Debes iniciar sesión o registrarte para ${mensajeAccion}.`,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "var(--color-salmon, #fa8072)", 
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Ir a Login",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login');
+        }
+      });
+    } else {
+      // Si hay sesión, ejecutamos la acción que nos hayan pasado
+      accionCallback();
+    }
+  };
+
   // Reset de página al buscar o cambiar de pestaña
   useEffect(() => {
     setPaginaActual(1);
@@ -29,9 +56,16 @@ export default function Comunidad() {
   const cargarUsuarios = async () => {
     setCargando(true);
     const token = localStorage.getItem("token");
+    
+    // Construimos las cabeceras condicionalmente
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
       const response = await fetch('http://localhost:8080/api/usuarios', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: headers // Pasamos nuestro objeto inteligente
       });
       if (response.ok) {
         const data = await response.json();
@@ -68,9 +102,16 @@ export default function Comunidad() {
   const cargarGrupos = async () => {
     setCargando(true);
     const token = localStorage.getItem("token");
+    
+    // Construimos las cabeceras condicionalmente
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
       const response = await fetch('http://localhost:8080/api/comunidades', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: headers // Pasamos nuestro objeto inteligente
       });
       if (response.ok) {
         const data = await response.json();
@@ -143,7 +184,10 @@ export default function Comunidad() {
         {/* Cabecera */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3">
           <h1 className="comunidad-titulo mb-0">Comunidad</h1>
-          <button className="btn-crear-grupo" onClick={() => setShowModal(true)}>
+          <button 
+            className="btn-crear-grupo" 
+            onClick={() => ejecutarAccionProtegida(() => setShowModal(true), "crear un nuevo club de lectura")}
+          >
             <i className="bi bi-plus-circle-fill me-2"></i> Crear Grupo
           </button>
         </div>
@@ -236,7 +280,10 @@ export default function Comunidad() {
                         
                         <button 
                           className="btn-unirse mt-auto w-100"
-                          onClick={() => navigate(`/comunidad/grupo/${grupo.idComunidad}`)}
+                          onClick={() => ejecutarAccionProtegida(
+                            () => navigate(`/comunidad/grupo/${grupo.idComunidad}`), 
+                            "ver los detalles y unirte a este grupo"
+                          )}
                         >
                           Ver grupo
                         </button>
@@ -321,7 +368,15 @@ export default function Comunidad() {
                       <div className="d-flex gap-3 text-muted small mt-auto">
                         <span><i className="bi bi-book-fill me-1"></i> {user.totalLibros || 0} leídos</span>
                       </div>
-                      <button className="btn-seguir mt-3 w-100" onClick={() => navigate(`/perfil/${user.idUsuario}`)}>Ver perfil</button>
+                      <button 
+                        className="btn-seguir mt-3 w-100" 
+                        onClick={() => ejecutarAccionProtegida(
+                          () => navigate(`/perfil/${user.idUsuario}`),
+                          "ver el perfil de este lector"
+                        )}
+                      >
+                        Ver perfil
+                      </button>
                     </div>
                   </div>
                 ))}
