@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Importante para la navegación SPA
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import AuthService from '../services/Auth.service';
-import { API_BASE_URL } from '../apiConfig';
 import '../assets/css/login.css';
 
 const Login = () => {
@@ -23,7 +23,14 @@ const Login = () => {
                 window.location.href = "/home";
             }
         } catch (error) {
-            alert("Error: Credenciales incorrectas");
+            // SweetAlert para error de credenciales
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de inicio de sesión',
+                text: 'Las credenciales son incorrectas. Por favor, inténtalo de nuevo.',
+                confirmButtonColor: '#5d4037',
+                confirmButtonText: 'Entendido'
+            });
         }
     };
 

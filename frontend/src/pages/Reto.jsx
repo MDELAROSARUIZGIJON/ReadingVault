@@ -39,7 +39,7 @@ const Reto = () => {
         .then((retoData) => {
           
           // 2. Cargamos el resto de libros de las estanterías del usuario
-          return fetch(`${API_BASE_URL}api/bibliotecas/usuario/${sesion.idUsuario}/completa`, { headers })
+          return fetch(`${API_BASE_URL}/api/bibliotecas/usuario/${sesion.idUsuario}/completa`, { headers })
             .then((res) => res.json())
             .then((items) => {
               const librosLeidos = items.filter(item => item.estanteria?.nombre === "Leído");
