@@ -27,7 +27,7 @@ import com.readingvault.services.LibroService;
 
 @RestController
 @RequestMapping("/api/libros")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${FRONTEND_URL}")
 public class LibroController {
 
     @Autowired

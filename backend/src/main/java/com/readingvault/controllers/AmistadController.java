@@ -21,7 +21,7 @@ import com.readingvault.services.AmistadService;
 
 @RestController
 @RequestMapping("/api/amistades")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${FRONTEND_URL}")
 public class AmistadController {
     
     @Autowired

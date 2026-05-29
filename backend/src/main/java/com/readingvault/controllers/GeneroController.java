@@ -13,7 +13,7 @@ import com.readingvault.repositories.GeneroRepository;
 
 @RestController
 @RequestMapping("/api/generos")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${FRONTEND_URL}")
 public class GeneroController {
 
     @Autowired
