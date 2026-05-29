@@ -1,18 +1,21 @@
-# Cambia esta parte de tu Dockerfile
 FROM node:18-alpine
 
-# En lugar de /app, le decimos que trabaje en la raíz del contenedor
+# Definimos el directorio de trabajo donde está tu código
 WORKDIR /app
 
-# Como tu Dockerfile está DENTRO de /frontend, necesitamos copiar todo 
-# lo que hay en /frontend al /app del contenedor
-COPY . .
+# Copiamos solo el package.json de la carpeta frontend a la raíz del contenedor
+COPY frontend/package*.json ./
 
-# Ahora sí, instalamos y construimos
+# Instalamos las dependencias
 RUN npm install
+
+# Copiamos todo lo demás de la carpeta frontend
+COPY frontend/ .
+
+# Construimos
 RUN npm run build
 
-# Servimos
+# Instalamos serve y exponemos
 RUN npm install -g serve
 EXPOSE 3000
 CMD ["serve", "-s", "dist", "-l", "3000"]
