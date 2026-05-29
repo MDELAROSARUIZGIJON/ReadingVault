@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "../apiConfig";
 import AvatarEditor from "react-avatar-editor";
 import Swal from 'sweetalert2';
 import "../assets/css/ajustes.css"; 
@@ -74,7 +75,7 @@ export default function EditarPerfilForm({ user }) {
 
         try {
           const response = await fetch(
-            `http://localhost:8080/api/usuarios/${user.idUsuario}/actualizar-foto`,
+            `${API_BASE_URL}/api/usuarios/${user.idUsuario}/actualizar-foto`,
             {
               method: "POST",
               headers: { Authorization: `Bearer ${token}` },
@@ -123,7 +124,7 @@ export default function EditarPerfilForm({ user }) {
     // Si ha dicho que sí, ejecutamos el borrado
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:8080/api/usuarios/${user.idUsuario}/eliminar-foto`, {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${user.idUsuario}/eliminar-foto`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -145,7 +146,7 @@ export default function EditarPerfilForm({ user }) {
     e.preventDefault();
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:8080/api/usuarios/${user.idUsuario}/actualizar`, {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${user.idUsuario}/actualizar`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

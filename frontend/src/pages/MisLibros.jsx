@@ -36,7 +36,7 @@ const MisLibros = () => {
         //await new Promise(resolve => setTimeout(resolve, 3000));
         
         const response = await fetch(
-          `http://localhost:8080/api/bibliotecas/usuario/${sesion.idUsuario}/completa`,
+          `${API_BASE_URL}/api/bibliotecas/usuario/${sesion.idUsuario}/completa`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../apiConfig";
 import "../assets/css/header.css";
 
 export default function Header() {
@@ -14,7 +15,7 @@ export default function Header() {
   useEffect(() => {
     if (estaLogueado) {
       const token = localStorage.getItem("token");
-      fetch(`http://localhost:8080/api/amistades/pendientes/${usuarioSesion.idUsuario}`, {
+      fetch(`${API_BASE_URL}/api/amistades/pendientes/${usuarioSesion.idUsuario}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.ok ? res.json() : [])

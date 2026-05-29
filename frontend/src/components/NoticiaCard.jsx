@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; 
+import { API_BASE_URL } from "../apiConfig";
 import Swal from "sweetalert2";
 
 // Añadimos mostrarNotificacion a los props recibidos
@@ -28,7 +29,7 @@ export default function NoticiaCard({ noticia, esAdmin, onNoticiaModificada, mos
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    fetch(`http://localhost:8080/api/libros/buscar?q=${busqueda}&isGenero=false`, { headers })
+    fetch(`${API_BASE_URL}/api/libros/buscar?q=${busqueda}&isGenero=false`, { headers })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setLibrosFiltrados(data))
       .catch((err) => console.error("Error buscando libros al editar:", err));
@@ -63,7 +64,7 @@ export default function NoticiaCard({ noticia, esAdmin, onNoticiaModificada, mos
       } : null
     };
 
-    fetch(`http://localhost:8080/api/noticias/${noticia.idNoticia}`, {
+    fetch(`${API_BASE_URL}/api/noticias/${noticia.idNoticia}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -104,7 +105,7 @@ export default function NoticiaCard({ noticia, esAdmin, onNoticiaModificada, mos
       cancelButtonText: "Cancelar"
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`http://localhost:8080/api/noticias/${noticia.idNoticia}`, {
+        fetch(`${API_BASE_URL}/api/noticias/${noticia.idNoticia}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` }
         }).then((res) => {

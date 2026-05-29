@@ -64,7 +64,7 @@ export default function Comunidad() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/usuarios', {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios`, {
         headers: headers // Pasamos nuestro objeto inteligente
       });
       if (response.ok) {
@@ -110,7 +110,7 @@ export default function Comunidad() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/comunidades', {
+      const response = await fetch(`${API_BASE_URL}/api/comunidades`, {
         headers: headers // Pasamos nuestro objeto inteligente
       });
       if (response.ok) {

@@ -29,7 +29,7 @@ export default function TusAmigos() {
     cargarDatosSociales();
     // Si no es mi lista, cargamos los datos del dueño para el título
     if (!esMiPropiaLista) {
-      fetch(`http://localhost:8080/api/usuarios/${idABuscar}`, { headers })
+      fetch(`${API_BASE_URL}/api/usuarios/${idABuscar}`, { headers })
         .then((res) => res.json())
         .then((data) => setUsuarioPerfil(data));
     }
@@ -42,7 +42,7 @@ export default function TusAmigos() {
       // Las solicitudes solo se cargan si es MI lista
       if (esMiPropiaLista) {
         const resPen = await fetch(
-          `http://localhost:8080/api/amistades/pendientes/${miSesion.idUsuario}`,
+          `${API_BASE_URL}/api/amistades/pendientes/${miSesion.idUsuario}`,
           { headers },
         );
         const dataPen = await resPen.json();
@@ -51,7 +51,7 @@ export default function TusAmigos() {
 
       // La lista de amigos se carga para cualquier ID
       const resAmi = await fetch(
-        `http://localhost:8080/api/amistades/lista/${idABuscar}`,
+        `${API_BASE_URL}/api/amistades/lista/${idABuscar}`,
         { headers },
       );
       const dataAmi = await resAmi.json();
@@ -90,7 +90,7 @@ export default function TusAmigos() {
     const metodo = accion === "aceptar" ? "PUT" : "DELETE";
 
     const res = await fetch(
-      `http://localhost:8080/api/amistades/${endpoint}/${id}`,
+      `${API_BASE_URL}/api/amistades/${endpoint}/${id}`,
       {
         method: metodo,
         headers: headers,

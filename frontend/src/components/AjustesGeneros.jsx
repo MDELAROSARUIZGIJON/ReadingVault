@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../apiConfig";
 import "../assets/css/ajustes.css"; 
 //prueba comentario
 // Recibimos onUpdate para sincronizar el estado con el componente padre
@@ -10,7 +11,7 @@ export default function AjustesGeneros({ user, onUpdate }) {
 
   useEffect(() => {
     // Pide todos los géneros al backend (MySQL)
-    fetch("http://localhost:8080/api/generos")
+    fetch(`${API_BASE_URL}/api/generos`)
       .then(res => res.json())
       .then(data => setGenerosDisponibles(data))
       .catch(err => console.error("Error cargando géneros:", err));
@@ -44,7 +45,7 @@ export default function AjustesGeneros({ user, onUpdate }) {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(`http://localhost:8080/api/usuarios/${user.idUsuario}/generos`, {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${user.idUsuario}/generos`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

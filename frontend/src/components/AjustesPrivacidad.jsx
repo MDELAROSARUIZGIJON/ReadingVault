@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../apiConfig";
 import Swal from 'sweetalert2';
 
 export default function AjustesPrivacidad({ user }) {
@@ -22,7 +23,7 @@ export default function AjustesPrivacidad({ user }) {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/usuarios/${user.idUsuario}/privacidad`,
+        `${API_BASE_URL}/api/usuarios/${user.idUsuario}/privacidad`,
         {
           method: "PUT",
           headers: {
@@ -85,7 +86,7 @@ export default function AjustesPrivacidad({ user }) {
         const token = localStorage.getItem("token");
         try {
           const response = await fetch(
-            `http://localhost:8080/api/usuarios/${user.idUsuario}/eliminar`,
+            `${API_BASE_URL}/api/usuarios/${user.idUsuario}/eliminar`,
             {
               method: "DELETE",
               headers: { Authorization: `Bearer ${token}` },

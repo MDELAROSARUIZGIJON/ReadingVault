@@ -98,7 +98,7 @@ export default function DetalleLibro() {
 
     // Si ha confirmado, procedemos a borrar
     try {
-      await axios.post('http://localhost:8080/api/reviews/borrar-comentario', {
+      await axios.post(`${API_BASE_URL}/api/reviews/borrar-comentario`, {
         idUsuario: usuarioSesion.idUsuario,
         idLibro: libro.idLibro
       });
@@ -119,7 +119,7 @@ export default function DetalleLibro() {
   const cargarDatosYVoto = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/libros/buscar-unico?isbn=${isbn}`
+        `${API_BASE_URL}/api/libros/buscar-unico?isbn=${isbn}`
       );
       
       let libroData = res.data;
@@ -128,7 +128,7 @@ export default function DetalleLibro() {
         setLibro(libroData); 
 
         if (libroData.isbn) {
-          axios.post('http://localhost:8080/api/libros/sincronizar', libroData)
+          axios.post(`${API_BASE_URL}/api/libros/sincronizar`, libroData)
                .catch(err => console.log("El libro ya existe o hubo un fallo silencioso"));
         }
       } else {
@@ -136,13 +136,13 @@ export default function DetalleLibro() {
       }
 
       if (libroData?.idLibro) {
-        const resResenas = await axios.get(`http://localhost:8080/api/reviews/libro/${libroData.idLibro}`);
+        const resResenas = await axios.get(`${API_BASE_URL}/api/reviews/libro/${libroData.idLibro}`);
         setResenasComunidad(resResenas.data || []);
 
         if (usuarioSesion) {
           try {
             const resVoto = await axios.get(
-              `http://localhost:8080/api/reviews/usuario/${usuarioSesion.idUsuario}/libro/${libroData.idLibro}`
+              `${API_BASE_URL}/api/reviews/usuario/${usuarioSesion.idUsuario}/libro/${libroData.idLibro}`
             );
             if (resVoto.data) {
               setMiVoto(resVoto.data.puntuacion);
@@ -153,7 +153,7 @@ export default function DetalleLibro() {
           try {
             const token = localStorage.getItem("token");
             const resVault = await axios.get(
-              `http://localhost:8080/api/bibliotecas/estado?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libroData.titulo)}&autor=${encodeURIComponent(libroData.autor)}`,
+              `${API_BASE_URL}/api/bibliotecas/estado?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libroData.titulo)}&autor=${encodeURIComponent(libroData.autor)}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             if (resVault.data?.nombreEstanteria) {
@@ -191,7 +191,7 @@ export default function DetalleLibro() {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/api/bibliotecas/add`, {
+      const response = await fetch(`${API_BASE_URL}/api/bibliotecas/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export default function DetalleLibro() {
 
         if (nombreEstanteria === "Leído") {
           try {
-            await axios.get(`http://localhost:8080/api/retos/usuario/${usuarioSesion.idUsuario}/actual`, {
+            await axios.get(`${API_BASE_URL}/api/retos/usuario/${usuarioSesion.idUsuario}/actual`, {
               headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
           } catch (retoErr) {
@@ -225,7 +225,7 @@ export default function DetalleLibro() {
   const eliminarDeBiblioteca = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/bibliotecas/remove?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
+        `${API_BASE_URL}/api/bibliotecas/remove?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -250,7 +250,7 @@ export default function DetalleLibro() {
 
     try {
       const libroParaEnviar = { ...libro, isbn: isbn };
-      await axios.post('http://localhost:8080/api/reviews/votar', {
+      await axios.post(`${API_BASE_URL}/api/reviews/votar`, {
         idUsuario: usuarioSesion.idUsuario,
         puntuacion: puntuacion,
         libro: libroParaEnviar 
@@ -271,7 +271,7 @@ export default function DetalleLibro() {
     }
 
     try {
-      await axios.post('http://localhost:8080/api/reviews/resenar', {
+      await axios.post(`${API_BASE_URL}/api/reviews/resenar`, {
         idUsuario: usuarioSesion.idUsuario,
         idLibro: libro.idLibro,
         contenido: textoResena

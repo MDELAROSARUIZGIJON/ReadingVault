@@ -20,7 +20,7 @@ export default function AjustesCuenta() {
       const token = localStorage.getItem("token");
 
       // Petición al backend
-      fetch(`http://localhost:8080/api/usuarios/${userObj.idUsuario}`, {
+      fetch(`${API_BASE_URL}/api/usuarios/${userObj.idUsuario}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())

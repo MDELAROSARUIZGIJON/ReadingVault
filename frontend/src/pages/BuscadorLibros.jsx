@@ -28,7 +28,7 @@ const BuscadorLibros = () => {
       const userObj = JSON.parse(sesion);
 
       axios
-        .get(`http://localhost:8080/api/usuarios/${userObj.idUsuario}`, {
+        .get(`${API_BASE_URL}/api/usuarios/${userObj.idUsuario}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -45,7 +45,7 @@ const BuscadorLibros = () => {
     }
 
     axios
-      .get("http://localhost:8080/api/generos")
+      .get(`${API_BASE_URL}/api/generos`)
       .then((res) => setListaMaestraGeneros(res.data))
       .catch((err) => console.error("Error cargando géneros:", err));
   }, []);
@@ -75,7 +75,7 @@ const BuscadorLibros = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/libros/buscar`,
+        `${API_BASE_URL}/api/libros/buscar`,
         {
           params: {
             q: query,

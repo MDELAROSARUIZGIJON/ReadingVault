@@ -47,7 +47,7 @@ export default function PerfilUsuario() {
     const userObj = JSON.parse(sesion);
     const headers = { Authorization: `Bearer ${token}` };
 
-    fetch(`http://localhost:8080/api/usuarios/${idUsuario}`, { headers })
+    fetch(`${API_BASE_URL}/api/usuarios/${idUsuario}`, { headers })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then(async (data) => { 
         setUsuario(data);
@@ -57,7 +57,7 @@ export default function PerfilUsuario() {
 
     if (userObj.idUsuario !== parseInt(idUsuario)) {
       fetch(
-        `http://localhost:8080/api/amistades/estado/${userObj.idUsuario}/${idUsuario}`,
+        `${API_BASE_URL}/api/amistades/estado/${userObj.idUsuario}/${idUsuario}`,
         { headers },
       )
         .then((res) => (res.ok ? res.text() : "NINGUNA"))
@@ -67,7 +67,7 @@ export default function PerfilUsuario() {
     }
 
     fetch(
-      `http://localhost:8080/api/bibliotecas/usuario/${idUsuario}/completa`,
+      `${API_BASE_URL}/api/bibliotecas/usuario/${idUsuario}/completa`,
       { headers },
     )
       .then((res) => (res.ok ? res.json() : []))
@@ -80,7 +80,7 @@ export default function PerfilUsuario() {
         setActividadLibros(ultimos3);
       });
 
-    fetch(`http://localhost:8080/api/reviews/usuario/${idUsuario}/total`, {
+    fetch(`${API_BASE_URL}/api/reviews/usuario/${idUsuario}/total`, {
       headers,
     })
       .then((res) => (res.ok ? res.json() : []))
@@ -91,14 +91,14 @@ export default function PerfilUsuario() {
         }));
       });
 
-    fetch(`http://localhost:8080/api/amistades/lista/${idUsuario}`, { headers })
+    fetch(`${API_BASE_URL}/api/amistades/lista/${idUsuario}`, { headers })
       .then((res) => (res.ok ? res.json() : []))
       .then((amigos) =>
         setStats((prev) => ({ ...prev, amigos: amigos.length })),
       );
 
     
-    fetch(`http://localhost:8080/api/retos/usuario/${idUsuario}/actual`, { headers })
+    fetch(`${API_BASE_URL}/api/retos/usuario/${idUsuario}/actual`, { headers })
       .then((res) => {
         if (!res.ok) throw new Error("Sin reto configurado");
         return res.json();
@@ -119,7 +119,7 @@ export default function PerfilUsuario() {
     const token = localStorage.getItem("token");
     const miSesion = JSON.parse(localStorage.getItem("usuario"));
 
-    fetch(`http://localhost:8080/api/amistades/enviar`, {
+    fetch(`${API_BASE_URL}/api/amistades/enviar`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -159,7 +159,7 @@ export default function PerfilUsuario() {
         const miSesion = JSON.parse(localStorage.getItem("usuario"));
 
         fetch(
-          `http://localhost:8080/api/amistades/eliminar/${miSesion.idUsuario}/${idUsuario}`,
+          `${API_BASE_URL}/api/amistades/eliminar/${miSesion.idUsuario}/${idUsuario}`,
           {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },

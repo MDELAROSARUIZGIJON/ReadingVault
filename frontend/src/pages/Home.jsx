@@ -78,7 +78,7 @@ export default function Home() {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/libros/buscar?q=${encodeURIComponent(busquedaLibro.trim())}`,
+          `${API_BASE_URL}/api/libros/buscar?q=${encodeURIComponent(busquedaLibro.trim())}`,
           { headers }
         );
         const data = await res.json();
@@ -102,7 +102,7 @@ export default function Home() {
 
   // Carga las noticias guardadas en el backend
   const cargarNoticiasReales = () => {
-    fetch("http://localhost:8080/api/noticias", { headers })
+    fetch(`${API_BASE_URL}0/api/noticias`, { headers })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setLibrosNoticias(data);
@@ -116,7 +116,7 @@ export default function Home() {
 
   // Carga el libro fijado en base de datos como libro del año
   const cargarLibroDelAnioFijo = () => {
-    fetch("http://localhost:8080/api/libros/libro-anio", { headers })
+    fetch(`${API_BASE_URL}/api/libros/libro-anio`, { headers })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setLibroAnio(data);
@@ -136,7 +136,7 @@ export default function Home() {
 
     // CARGA COLUMNA IZQUIERDA: Progreso de lectura y Reto Anual seguro
     fetch(
-      `http://localhost:8080/api/bibliotecas/usuario/${miSesion.idUsuario}/completa`,
+      `${API_BASE_URL}/api/bibliotecas/usuario/${miSesion.idUsuario}/completa`,
       { headers },
     )
       .then((res) => (res.ok ? res.json() : []))
@@ -152,7 +152,7 @@ export default function Home() {
         ).length;
 
         return fetch(
-          `http://localhost:8080/api/retos/usuario/${miSesion.idUsuario}/actual`,
+          `${API_BASE_URL}/api/retos/usuario/${miSesion.idUsuario}/actual`,
           { headers },
         )
           .then((resReto) => {
@@ -187,7 +187,7 @@ export default function Home() {
     cargarNoticiasReales();
 
     // MOTOR DE RECOMENDACIONES
-    fetch(`http://localhost:8080/api/reviews/recomendacion-amigo/${miSesion.idUsuario}`, { headers })
+    fetch(`${API_BASE_URL}/api/reviews/recomendacion-amigo/${miSesion.idUsuario}`, { headers })
       .then((res) => {
         if (!res.ok) throw new Error("Sin recomendaciones de amigos");
         return res.json();
@@ -202,7 +202,7 @@ export default function Home() {
         setNombreRecomendador(`tu amigo ${data.nombreAmigo || "un amigo"}`);
       })
       .catch(() => {
-        fetch("http://localhost:8080/api/libros/recomendacion-aleatoria", { headers })
+        fetch(`${API_BASE_URL}/api/libros/recomendacion-aleatoria`, { headers })
           .then((res) => {
             if (!res.ok) throw new Error("No hay libros destacados en el servidor");
             return res.json();
@@ -234,7 +234,7 @@ export default function Home() {
     try {
       // SINCRONIZAR SI NO EXISTE EN LOCAL
       if (!objetoLibro.idLibro) {
-        await fetch("http://localhost:8080/api/libros/sincronizar", {
+        await fetch(`${API_BASE_URL}/api/libros/sincronizar`, {
           method: "POST",
           headers: {
             ...headers,
@@ -251,14 +251,14 @@ export default function Home() {
       if (objetoLibro.autor) params.append("autor", objetoLibro.autor);
 
       const resLocal = await fetch(
-        `http://localhost:8080/api/libros/buscar-unico?${params.toString()}`,
+        `${API_BASE_URL}/api/libros/buscar-unico?${params.toString()}`,
         { headers }
       );
       const libroLocalizado = await resLocal.json();
 
       // MARCAR LIBRO DEL AÑO
       const resMarcar = await fetch(
-        `http://localhost:8080/api/libros/${libroLocalizado.idLibro}/marcar-libro-anio`,
+        `${API_BASE_URL}/api/libros/${libroLocalizado.idLibro}/marcar-libro-anio`,
         {
           method: "PUT",
           headers,
@@ -307,7 +307,7 @@ export default function Home() {
     if (nuevaPagina !== undefined) {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/bibliotecas/actualizar-progreso`,
+          `${API_BASE_URL}/api/bibliotecas/actualizar-progreso`,
           {
             method: "PUT",
             headers: headers,
@@ -327,7 +327,7 @@ export default function Home() {
           });
 
           const resLibros = await fetch(
-            `http://localhost:8080/api/bibliotecas/usuario/${miSesion.idUsuario}/completa`,
+            `${API_BASE_URL}/api/bibliotecas/usuario/${miSesion.idUsuario}/completa`,
             { headers },
           );
           const items = resLibros.ok ? await resLibros.json() : [];
@@ -342,7 +342,7 @@ export default function Home() {
 
           try {
             const resReto = await fetch(
-              `http://localhost:8080/api/retos/usuario/${miSesion.idUsuario}/actual`,
+              `${API_BASE_URL}/api/retos/usuario/${miSesion.idUsuario}/actual`,
               { headers },
             );
             if (resReto.ok) {
@@ -439,7 +439,7 @@ export default function Home() {
       return;
     }
 
-    fetch(`http://localhost:8080/api/bibliotecas/actualizar-progreso`, {
+    fetch(`${API_BASE_URL}/api/bibliotecas/actualizar-progreso`, {
       method: "PUT",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -458,7 +458,7 @@ export default function Home() {
   };
 
   const guardarLibroTerminado = () => {
-    fetch(`http://localhost:8080/api/bibliotecas/actualizar-estanteria`, {
+    fetch(`${API_BASE_URL}/api/bibliotecas/actualizar-estanteria`, {
       method: "PUT",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -467,7 +467,7 @@ export default function Home() {
       }),
     }).then((res) => {
       if (res.ok) {
-        fetch(`http://localhost:8080/api/reviews`, {
+        fetch(`${API_BASE_URL}/api/reviews`, {
           method: "POST",
           headers: { ...headers, "Content-Type": "application/json" },
           body: JSON.stringify({
