@@ -38,7 +38,7 @@ import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/api/comunidades")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${FRONTEND_URL}")
 public class ComunidadController {
 
     private final MensajeComunidadRepository mensajeComunidadRepository;

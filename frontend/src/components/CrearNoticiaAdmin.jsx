@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "../apiConfig";
 import "../assets/css/crearNoticiaAdmin.css";
 
 // Añadimos mostrarNotificacion aquí en los props
@@ -30,7 +31,7 @@ export default function CrearNoticiaAdmin({ onNoticiaCreada, mostrarNotificacion
     const headers = { Authorization: `Bearer ${token}` };
     
     // Consultamos el endpoint híbrido pasándole 'q' y forzando isGenero=false (Google Books)
-    fetch(`http://localhost:8080/api/libros/buscar?q=${busqueda}&isGenero=false`, { headers })
+    fetch(`${API_BASE_URL}/api/libros/buscar?q=${busqueda}&isGenero=false`, { headers })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setLibrosFiltrados(data);
@@ -71,7 +72,7 @@ export default function CrearNoticiaAdmin({ onNoticiaCreada, mostrarNotificacion
     };
 
     // Petición POST para persistir la noticia en la base de datos
-    fetch("http://localhost:8080/api/noticias", {
+    fetch(`${API_BASE_URL}/api/noticias`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

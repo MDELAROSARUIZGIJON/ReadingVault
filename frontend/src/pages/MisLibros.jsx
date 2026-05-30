@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import SideBarBiblioteca from "../components/SideBarBiblioteca";
 import EstanteriaSeccion from "../sections/EstanteriaSeccion";
 import LibroCard from "../components/LibroCard";
+import { API_BASE_URL } from '../apiConfig';
 import "../assets/css/misLibros.css";
 
 const MisLibros = () => {
@@ -36,7 +37,7 @@ const MisLibros = () => {
         //await new Promise(resolve => setTimeout(resolve, 3000));
         
         const response = await fetch(
-          `http://localhost:8080/api/bibliotecas/usuario/${sesion.idUsuario}/completa`,
+          `${API_BASE_URL}/api/bibliotecas/usuario/${sesion.idUsuario}/completa`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },

@@ -23,7 +23,7 @@ import com.readingvault.services.UsuarioService;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://127.0.0.1:5173")
+@CrossOrigin(origins = "${FRONTEND_URL}")
 public class AuthController {
 
     @Autowired

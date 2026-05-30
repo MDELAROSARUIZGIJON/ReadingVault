@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from "../apiConfig";
 import '../assets/css/crearGrupoModal.css';
 
 const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
@@ -37,7 +38,7 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
 
     const token = localStorage.getItem("token");
     try {
-        const url = `http://localhost:8080/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
+        const url = `${API_BASE_URL}/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
         
         const response = await fetch(url, {
             headers: { "Authorization": `Bearer ${token}` }
@@ -100,7 +101,7 @@ const CrearGrupoModal = ({ show, onClose, onGrupoCreado }) => {
     if (formData.foto) dataToSend.append("foto", formData.foto);
 
     try {
-        const response = await fetch("http://localhost:8080/api/comunidades/crear", {
+        const response = await fetch(`${API_BASE_URL}/api/comunidades/crear`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}` },
             body: dataToSend

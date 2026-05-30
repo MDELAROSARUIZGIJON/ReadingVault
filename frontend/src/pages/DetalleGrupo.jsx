@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from '../apiConfig';
 import Swal from 'sweetalert2';
 import "../assets/css/detalleGrupo.css";
 
@@ -50,7 +51,7 @@ export default function DetalleGrupo() {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/comunidades/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/comunidades/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -92,7 +93,7 @@ export default function DetalleGrupo() {
 
     const endpoint = estaUnido ? "salir" : "unirse";
     try {
-      const res = await fetch(`http://localhost:8080/api/comunidades/${id}/${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}/api/comunidades/${id}/${endpoint}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -133,7 +134,7 @@ export default function DetalleGrupo() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:8080/api/comunidades/${id}`, {
+          const res = await fetch(`${API_BASE_URL}/api/comunidades/${id}`, {
             method: "DELETE",
             headers: { 
               "Authorization": `Bearer ${token}`,
@@ -168,7 +169,7 @@ export default function DetalleGrupo() {
     }
 
     try {
-      const url = `http://localhost:8080/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
+      const url = `${API_BASE_URL}/api/libros/buscar-exacto?q=${encodeURIComponent(texto.trim())}&pagina=1`;
       
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -220,7 +221,7 @@ export default function DetalleGrupo() {
 
   const ejecutarAbandonar = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/comunidades/${id}/salir`, {
+      const res = await fetch(`${API_BASE_URL}/api/comunidades/${id}/salir`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -255,7 +256,7 @@ export default function DetalleGrupo() {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/comunidades/${id}/cambiar-libro`,
+        `${API_BASE_URL}/api/comunidades/${id}/cambiar-libro`,
         {
           method: "POST",
           headers: {
@@ -285,7 +286,7 @@ export default function DetalleGrupo() {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/comunidades/${id}/mensajes`,
+        `${API_BASE_URL}/api/comunidades/${id}/mensajes`,
         {
           method: "POST",
           headers: {
@@ -323,7 +324,7 @@ export default function DetalleGrupo() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:8080/api/comunidades/mensajes/${idMensaje}`, {
+          const res = await fetch(`${API_BASE_URL}/api/comunidades/mensajes/${idMensaje}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -345,7 +346,7 @@ export default function DetalleGrupo() {
   const handleGuardarEdicion = async (idMensaje) => {
     if (!textoEditando.trim()) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/comunidades/mensajes/${idMensaje}`, {
+      const res = await fetch(`${API_BASE_URL}/api/comunidades/mensajes/${idMensaje}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -403,7 +404,7 @@ export default function DetalleGrupo() {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/comunidades/${id}/actualizar-progreso`,
+        `${API_BASE_URL}/api/comunidades/${id}/actualizar-progreso`,
         {
           method: "POST",
           headers: {

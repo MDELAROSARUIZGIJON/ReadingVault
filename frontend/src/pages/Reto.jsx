@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import RetoHeader from "../components/RetoHeader";
 import "../assets/css/paginaReto.css";
 import Confetti from 'react-confetti';
+import { API_BASE_URL } from '../apiConfig';
 
 const Reto = () => {
   const [paginasPasadas, setPaginasPasadas] = useState([]);
@@ -33,12 +34,12 @@ const Reto = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       // 1. Llamamos a tu tabla reto_lectura para sacar el objetivo del año actual
-      fetch(`http://localhost:8080/api/retos/usuario/${sesion.idUsuario}/actual`, { headers })
+      fetch(`${API_BASE_URL}/api/retos/usuario/${sesion.idUsuario}/actual`, { headers })
         .then((res) => res.json())
         .then((retoData) => {
           
           // 2. Cargamos el resto de libros de las estanterías del usuario
-          return fetch(`http://localhost:8080/api/bibliotecas/usuario/${sesion.idUsuario}/completa`, { headers })
+          return fetch(`${API_BASE_URL}/api/bibliotecas/usuario/${sesion.idUsuario}/completa`, { headers })
             .then((res) => res.json())
             .then((items) => {
               const librosLeidos = items.filter(item => item.estanteria?.nombre === "Leído");
@@ -73,7 +74,7 @@ const Reto = () => {
     const sesion = JSON.parse(localStorage.getItem("usuario"));
 
     // Hacemos la petición a tu RetoLecturaController
-    fetch(`http://localhost:8080/api/retos/usuario/${sesion.idUsuario}`, {
+    fetch(`${API_BASE_URL}/api/retos/usuario/${sesion.idUsuario}`, {
       method: "POST", // Mandamos un POST para crear o actualizar el registro
       headers: {
         Authorization: `Bearer ${token}`,
@@ -106,7 +107,7 @@ const Reto = () => {
 
   const guardarProgresoParcial = () => {
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:8080/api/bibliotecas/actualizar-progreso`, {
+    fetch(`${API_BASE_URL}/api/bibliotecas/actualizar-progreso`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -133,7 +134,7 @@ const Reto = () => {
 
   const guardarTodo = () => {
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:8080/api/bibliotecas/actualizar-estanteria`, {
+    fetch(`${API_BASE_URL}/api/bibliotecas/actualizar-estanteria`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,

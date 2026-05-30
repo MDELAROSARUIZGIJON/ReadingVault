@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../apiConfig";
 import Swal from 'sweetalert2'
 import "../assets/css/libroCard.css";
 
@@ -21,7 +22,7 @@ const LibroCard = ({ libro }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          `http://localhost:8080/api/bibliotecas/estado?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
+          `${API_BASE_URL}/api/bibliotecas/estado?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -75,7 +76,7 @@ const añadirABiblioteca = async (nombreEstanteria) => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/api/bibliotecas/add`, {
+      const response = await fetch(`${API_BASE_URL}/api/bibliotecas/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +100,7 @@ const añadirABiblioteca = async (nombreEstanteria) => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/bibliotecas/remove?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
+        `${API_BASE_URL}/api/bibliotecas/remove?idUsuario=${usuarioSesion.idUsuario}&titulo=${encodeURIComponent(libro.titulo)}&autor=${encodeURIComponent(libro.autor)}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

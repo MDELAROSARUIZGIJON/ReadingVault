@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; 
+import { API_BASE_URL } from '../apiConfig';
 import "../assets/css/actividadUsuario.css";
 
 // TRUNCAR LAS RESEÑAS CON "LEER MÁS"
@@ -40,7 +41,7 @@ export default function ActividadUsuario({ libros, idUsuario }) {
         if (!idUsuario || idUsuario === "undefined") return;
 
         const token = localStorage.getItem("token");
-        fetch(`http://localhost:8080/api/reviews/usuario/${idUsuario}/total`, {
+        fetch(`${API_BASE_URL}/api/reviews/usuario/${idUsuario}/total`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.ok ? res.json() : [])

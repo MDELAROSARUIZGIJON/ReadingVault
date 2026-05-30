@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../apiConfig';
 import "../assets/css/listaAmigos.css";
 
 export default function MiembrosGrupo() {
@@ -40,7 +41,7 @@ export default function MiembrosGrupo() {
   const cargarDatosComunidad = async () => {
     setCargando(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/comunidades/${idGrupo}`, { headers });
+      const res = await fetch(`${API_BASE_URL}/api/comunidades/${idGrupo}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setGrupoInfo(data);
@@ -115,7 +116,7 @@ export default function MiembrosGrupo() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:8080/api/comunidades/${idGrupo}/expulsar/${idUsuario}`, { method: "DELETE", headers });
+          const res = await fetch(`${API_BASE_URL}/api/comunidades/${idGrupo}/expulsar/${idUsuario}`, { method: "DELETE", headers });
           if (res.ok) {
             Swal.fire({ title: '¡Expulsado!', icon: 'success', timer: 1500, showConfirmButton: false });
             cargarDatosComunidad();
@@ -137,7 +138,7 @@ export default function MiembrosGrupo() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:8080/api/comunidades/${idGrupo}/cambiar-admin/${idUsuario}`, { method: "PUT", headers });
+          const res = await fetch(`${API_BASE_URL}/api/comunidades/${idGrupo}/cambiar-admin/${idUsuario}`, { method: "PUT", headers });
           if (res.ok) {
             Swal.fire({ title: '¡Rol transferido!', icon: 'success', timer: 1500, showConfirmButton: false });
             cargarDatosComunidad();
