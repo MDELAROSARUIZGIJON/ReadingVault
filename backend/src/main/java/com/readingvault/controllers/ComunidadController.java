@@ -251,22 +251,27 @@ public class ComunidadController {
         Comunidad comunidad = comunidadRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
 
-        // Eliminamos la relación
+        // Busca el miembro
         Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
                 .findByComunidadIdComunidadAndUsuarioIdUsuario(id, idUsuario);
         
         if (relacion.isPresent()) {
             comunidad.getMiembros().remove(relacion.get());
+            // Elimina de DB
             usuarioComunidadRepository.delete(relacion.get());
-            // Forzamos el guardado de los cambios en la comunidad antes de contar
-            comunidadRepository.save(comunidad);
+            // Fuerza sincronización con DB
+            usuarioComunidadRepository.flush(); 
         }
 
-        if (comunidad.getMiembros().isEmpty()) {
+        // Comprueba tamaño seguro
+        if (comunidad.getMiembros().size() == 0) {
+            // Borra grupo vacío
             comunidadRepository.delete(comunidad);
             return ResponseEntity.ok("Grupo eliminado por quedar vacío");
         }
 
+        // Guarda si aún hay gente
+        comunidadRepository.save(comunidad);
         return ResponseEntity.ok(comunidad);
     }
 
