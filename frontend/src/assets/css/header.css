@@ -100,7 +100,7 @@
 
 /* --- ESTILO HAMBURGUESA --- */
 .navbar-custom__hamburger {
-  display: none; /* Oculto en escritorio */
+  display: none; /* Por defecto oculto en escritorio */
   flex-direction: column;
   cursor: pointer;
   gap: 5px;
@@ -116,11 +116,12 @@
 /* --- MÓVIL (< 768px) --- */
 @media (max-width: 768px) {
   .navbar-custom__hamburger {
-    display: flex; /* Visible solo en móvil */
+    display: flex; 
   }
 
+  /* El menú principal debe estar oculto por defecto en móvil */
   .navbar-custom__menu {
-    display: none; /* Ocultar menú por defecto en móvil */
+    display: none; 
     position: absolute;
     top: 100px;
     left: 0;
@@ -130,9 +131,11 @@
     padding: 20px;
     gap: 15px;
     align-items: center;
+    z-index: 999; 
   }
 
+  /* Solo se muestra cuando la clase .is-open está activa */
   .navbar-custom__menu.is-open {
-    display: flex; /* Se muestra al abrir */
+    display: flex !important; 
   }
 }
