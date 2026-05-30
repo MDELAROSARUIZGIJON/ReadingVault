@@ -298,17 +298,36 @@ public class ComunidadController {
     // EXPULSAR MIEMBRO
     @DeleteMapping("/{idComunidad}/expulsar/{idUsuario}")
     @Transactional
-    public ResponseEntity<?> expulsarMiembro(@PathVariable Long idComunidad, @PathVariable Long idUsuario) {
-        // Buscamos la relación
-        Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
-                .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idUsuario);
+    public ResponseEntity<?> expulsarMiembro(@PathVariable Long idComunidad, @PathVariable Long idUsuario, @RequestBody Map<String, Long> payload) {
         
-        if (relacion.isPresent()) {
-            usuarioComunidadRepository.delete(relacion.get());
-            usuarioComunidadRepository.flush();
-            return ResponseEntity.ok().build();
+        // Obtener usuario que ejecuta la accion
+        Long idSolicitante = payload.get("idUsuario");
+        Usuario solicitante = usuarioRepository.findById(idSolicitante).orElseThrow();
+
+        // Comprobar si es admin del sistema
+        boolean esAdminSistema = "ADMIN".equalsIgnoreCase(solicitante.getRol());
+        
+        // Comprobar si es admin del grupo
+        boolean esAdminGrupo = usuarioComunidadRepository
+                .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idSolicitante)
+                .map(uc -> "admin".equals(uc.getRol()))
+                .orElse(false);
+
+        // Si tiene alguno de los dos permisos, procedemos a borrar
+        if (esAdminSistema || esAdminGrupo) {
+            Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
+                    .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idUsuario);
+            
+            if (relacion.isPresent()) {
+                usuarioComunidadRepository.delete(relacion.get());
+                usuarioComunidadRepository.flush(); // Sincroniza con DB
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+
+        // Bloquear accion si no tiene permisos
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para expulsar");
     }
 
     // CEDER ADMINISTRACIÓN
