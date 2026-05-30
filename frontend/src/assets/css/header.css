@@ -11,6 +11,12 @@
   z-index: 1000;
 }
 
+.navbar-custom__menu {
+  display: flex; /* Esto hace que se vea en escritorio */
+  align-items: center;
+  gap: 15px;
+}
+
 /* --- ESTILO DEL LOGO Y MARCA --- */
 .navbar-custom__brand {
   display: flex;
