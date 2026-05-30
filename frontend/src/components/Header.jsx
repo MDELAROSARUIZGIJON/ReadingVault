@@ -50,7 +50,7 @@ export default function Header() {
         </Link>
 
         {/* MENÚ */}
-        <div className={`navbar-custom__menu d-flex align-items-center gap-4 ${isOpen ? "is-open" : ""}`}>
+        <div className={`navbar-custom__menu ${isOpen ? "is-open" : ""}`}>
           
           <Link to={estaLogueado ? "/home" : "/login"} className="navbar-custom__link">Home</Link>
           <Link to="/comunidad" className="navbar-custom__link">Comunidad</Link>
