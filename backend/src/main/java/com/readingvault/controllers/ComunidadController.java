@@ -300,33 +300,36 @@ public class ComunidadController {
     @Transactional
     public ResponseEntity<?> expulsarMiembro(@PathVariable Long idComunidad, @PathVariable Long idUsuario, @RequestBody Map<String, Long> payload) {
         
-        // Obtener usuario que ejecuta la accion
         Long idSolicitante = payload.get("idUsuario");
         Usuario solicitante = usuarioRepository.findById(idSolicitante).orElseThrow();
 
-        // Comprobar si es admin del sistema
+        // Validar roles
         boolean esAdminSistema = "ADMIN".equalsIgnoreCase(solicitante.getRol());
-        
-        // Comprobar si es admin del grupo
         boolean esAdminGrupo = usuarioComunidadRepository
                 .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idSolicitante)
                 .map(uc -> "admin".equals(uc.getRol()))
                 .orElse(false);
 
-        // Si tiene alguno de los dos permisos, procedemos a borrar
         if (esAdminSistema || esAdminGrupo) {
+            // Obtener la comunidad padre
+            Comunidad comunidad = comunidadRepository.findById(idComunidad).orElseThrow();
             Optional<UsuarioComunidad> relacion = usuarioComunidadRepository
                     .findByComunidadIdComunidadAndUsuarioIdUsuario(idComunidad, idUsuario);
             
             if (relacion.isPresent()) {
+                // Desligar de la lista padre para evitar que Hibernate lo recupere
+                comunidad.getMiembros().remove(relacion.get());
+                comunidadRepository.save(comunidad); 
+                
+                // Borrar definitivamente de la tabla intermedia
                 usuarioComunidadRepository.delete(relacion.get());
-                usuarioComunidadRepository.flush(); // Sincroniza con DB
+                usuarioComunidadRepository.flush(); 
+                
                 return ResponseEntity.ok().build();
             }
             return ResponseEntity.notFound().build();
         }
 
-        // Bloquear accion si no tiene permisos
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para expulsar");
     }
 
