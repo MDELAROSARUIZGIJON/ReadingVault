@@ -1,20 +1,27 @@
 /* src/assets/css/header.css */
 
 .navbar-custom {
-  background-color: var(--color-azul-footer);
   height: 100px; 
   display: flex;
   align-items: center;
   width: 100%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   position: relative;
   z-index: 1000;
 }
+.navbar-custom::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--color-azul-footer);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  z-index: 2; 
+}
 
 .navbar-custom__menu {
-  display: flex; /* Esto hace que se vea en escritorio */
+  display: flex; /* Visible en escritorio */
   align-items: center;
   gap: 15px;
+  z-index: 3;
 }
 
 /* --- ESTILO DEL LOGO Y MARCA --- */
@@ -23,6 +30,7 @@
   align-items: center;
   gap: 15px; 
   text-decoration: none;
+  z-index: 3;
 }
 
 /* Contenedor circular blanco */
@@ -37,12 +45,20 @@
   box-shadow: var(--shadow);
   overflow: hidden;
   flex-shrink: 0;
+  z-index: 3;
 }
 
 .navbar-custom__logo-img {
   width: 180%;
   height: 180%;
   object-fit: contain;
+}
+
+.navbar-custom__brand h3 {
+  margin: 0;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
 }
 
 /* --- TIPOGRAFÍA ARIMA PARA EL LOGO --- */
@@ -63,6 +79,7 @@
   color: var(--color-amarillo);
   margin-left: 5px;
   font-family: var(--font-titulos);
+  z-index: 999;
 }
 
 /* --- ENLACES DEL MENÚ --- */
@@ -106,17 +123,14 @@
 
 /* --- ESTILO HAMBURGUESA --- */
 .navbar-custom__hamburger {
-  display: none; /* Por defecto oculto en escritorio */
-  flex-direction: column;
-  cursor: pointer;
-  gap: 5px;
+  display: none; /* Oculto en escritorio */
+  color: var(--color-verde-oscuro);
+  transition: color 0.3s ease;
+  z-index: 3;
 }
 
-.navbar-custom__hamburger span {
-  width: 25px;
-  height: 3px;
-  background-color: var(--color-verde-oscuro);
-  transition: 0.3s;
+.navbar-custom__hamburger:hover {
+  color: var(--color-amarillo);
 }
 
 /* --- MÓVIL (< 768px) --- */
@@ -125,11 +139,10 @@
     display: flex; 
   }
 
-  /* El menú principal debe estar oculto por defecto en móvil */
   .navbar-custom__menu {
-    display: none; 
+    display: flex; 
     position: absolute;
-    top: 100px;
+    top: 90px;
     left: 0;
     width: 100%;
     background-color: var(--color-azul-footer);
@@ -137,11 +150,27 @@
     padding: 20px;
     gap: 15px;
     align-items: center;
-    z-index: 999; 
+    
+    /* MAGIA: Lo ponemos en z-index 1, por detrás de la capa de fondo (2) */
+    z-index: 1; 
+    
+    box-shadow: 0 12px 15px -5px rgba(0, 0, 0, 0.15); 
+    
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Le damos más recorrido (40px) para que el efecto "salir de abajo" sea más notorio */
+    transform: translateY(-40px);
+    transition: all 0.3s ease-in-out;
   }
 
-  /* Solo se muestra cuando la clase .is-open está activa */
+  .navbar-custom.menu-open::before {
+  box-shadow: none;
+}
+
   .navbar-custom__menu.is-open {
-    display: flex !important; 
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 }

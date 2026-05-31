@@ -53,8 +53,8 @@ export default function Header() {
   const FOTO_DEFAULT = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   return (
-    // Ref asignado al nav principal
-    <nav className="navbar-custom" ref={menuRef}>
+    // Ref asignado al nav principal para cerrar al hacer clic fuera
+    <nav className={`navbar-custom ${isOpen ? "menu-open" : ""}`} ref={menuRef}>
       <div className="container d-flex justify-content-between align-items-center">
         
         {/* Logo */}
@@ -86,20 +86,22 @@ export default function Header() {
             </Link>
           )}
 
-          <div className="navbar-custom__divider"></div>
+          {/* Ocultamos la barra vertical en móviles (visible solo desde md en adelante) */}
+          <div className="navbar-custom__divider d-none d-md-block"></div>
 
           {/* Opciones Auth */}
           {!estaLogueado ? (
-            <>
+            <div className="d-flex flex-column flex-md-row align-items-center gap-3 mt-3 mt-md-0">
               <Link to="/registro" className="navbar-custom__link" onClick={cerrarMenu}>
                 Registro
               </Link>
               <Link to="/login" className="navbar-custom__auth-btn" onClick={cerrarMenu}>
                 Log In
               </Link>
-            </>
+            </div>
           ) : (
-            <div className="d-flex align-items-center gap-3">
+            // Alineamos los botones en columna para móvil y en fila para PC, añadiendo margen superior en móvil
+            <div className="d-flex flex-column flex-md-row align-items-center gap-3 mt-4 mt-md-0">
               <Link
                 to={`/perfil/${usuarioSesion.idUsuario}`}
                 className="navbar-custom__link d-flex align-items-center gap-2"
