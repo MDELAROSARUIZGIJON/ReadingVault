@@ -264,3 +264,8 @@ a.opacity-90:hover {
     box-shadow: none !important;
     outline: none !important;
 }
+.anotacion{
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}

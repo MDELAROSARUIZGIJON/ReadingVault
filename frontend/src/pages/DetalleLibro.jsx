@@ -22,7 +22,16 @@ function TextoResenaTruncado({ texto }) {
 
   return (
     <div className="detalle-texto-resena">
-      <p className="mb-1">"{textoMostrado}"</p>
+      <p 
+        className="mb-1" 
+        style={{ 
+          wordBreak: 'break-word', 
+          overflowWrap: 'break-word' 
+        }}
+      >
+        "{textoMostrado}"
+      </p>
+      
       <button 
         className="p-0 border-0 bg-transparent text-primary small fw-bold" 
         onClick={() => setExpandido(!expandido)}

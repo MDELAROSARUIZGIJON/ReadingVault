@@ -77,6 +77,9 @@
     flex-grow: 1; 
     padding: 20px; 
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 /* BOTONES GESTIÓN EXTERNOS */

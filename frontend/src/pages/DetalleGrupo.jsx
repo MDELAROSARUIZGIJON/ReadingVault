@@ -535,7 +535,7 @@ export default function DetalleGrupo() {
                       Pág. {grupo.paginaActual || 0} / {grupo.libro?.paginas || grupo.totalPaginas || 0}
                     </h6>
                     <div className="mt-2 mb-3 p-2 border-start border-3 border-warning bg-light rounded-end">
-                      <span className="small text-muted fst-italic d-block">
+                      <span className="small text-muted fst-italic d-block anotacion">
                         {grupo.notaProgreso ? `"${grupo.notaProgreso}"` : "Sin anotaciones en este capítulo todavía."}
                       </span>
                     </div>
@@ -669,7 +669,11 @@ export default function DetalleGrupo() {
                               </div>
                             </div>
                           ) : (
-                            <p className="mb-0 text-secondary" style={{ whiteSpace: 'pre-wrap' }}>{msg.contenido}</p>
+                            <p className="mb-0 text-secondary" style={{ 
+                                whiteSpace: 'pre-wrap', 
+                                wordBreak: 'break-word', 
+                                overflowWrap: 'break-word' 
+                            }}>{msg.contenido}</p>
                           )}
                         </div>
                       </div>

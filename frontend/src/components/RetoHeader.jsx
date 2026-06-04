@@ -3,7 +3,7 @@ import { API_BASE_URL } from "../apiConfig";
 import "../assets/css/retoHeader.css";
 
 const RetoHeader = () => {
-  const añoActual = 2025;
+  const añoActual = 2026;
 
   return (
     <header className="reto-header">
