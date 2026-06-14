@@ -7,5 +7,6 @@ import com.readingvault.models.Comunidad;
 
 @Repository
 public interface ComunidadRepository extends JpaRepository<Comunidad, Long> {
-    
+    // Cuenta cuántas comunidades tienen a un usuario específico en su lista de miembros
+    long countByMiembrosUsuarioIdUsuario(Long idUsuario);
 }

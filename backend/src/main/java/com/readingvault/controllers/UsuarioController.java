@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.readingvault.models.Genero;
 import com.readingvault.models.Usuario;
+import com.readingvault.repositories.ComunidadRepository;
 import com.readingvault.repositories.EstanteriaRepository;
 import com.readingvault.repositories.GeneroRepository;
 import com.readingvault.repositories.LibroEstanteriaRepository;
@@ -47,6 +48,8 @@ public class UsuarioController {
     private EstanteriaRepository estanteriaRepository;
     @Autowired
     private LibroEstanteriaRepository libroEstanteriaRepository;
+    @Autowired
+    private ComunidadRepository comunidadRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtenerPerfil(@PathVariable Long id) {
@@ -219,5 +222,10 @@ public class UsuarioController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/usuario/{idUsuario}/contar")
+        public ResponseEntity<Long> contarGrupos(@PathVariable Long idUsuario) {
+        return ResponseEntity.ok(comunidadRepository.countByMiembrosUsuarioIdUsuario(idUsuario));
     }
 }

@@ -65,6 +65,13 @@ export default function PerfilUsuario() {
       setEstadoRelacion("PROPIO");
     }
 
+    fetch(`${API_BASE_URL}/api/usuarios/usuario/${idUsuario}/contar`, { headers })
+      .then((res) => (res.ok ? res.json() : 0))
+      .then((count) => {
+        setStats((prev) => ({ ...prev, grupos: count }));
+      })
+      .catch((err) => console.error("Error al contar grupos:", err));
+
     fetch(
       `${API_BASE_URL}/api/bibliotecas/usuario/${idUsuario}/completa`,
       { headers },
