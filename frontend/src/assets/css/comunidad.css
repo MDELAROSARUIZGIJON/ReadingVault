@@ -12,6 +12,30 @@
     color: var(--color-verde-oscuro);
 }
 
+.btn-vault-tabs {
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 10px 25px;
+  border: 2px solid var(--color-verde-oscuro);
+  background-color: transparent;
+  color: var(--color-verde-oscuro);
+  border-radius: 50px; /* Estilo píldora */
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.btn-vault-tabs:hover {
+  background-color: rgba(75, 80, 67, 0.1);
+}
+
+/* Estado activo: usa tu color salmón */
+.btn-vault-tabs.active {
+  background-color: var(--color-salmon);
+  border-color: var(--color-salmon);
+  color: white;
+}
+
 /* Caja del buscador */
 .busqueda-container {
     background-color: var(--color-azul-footer);

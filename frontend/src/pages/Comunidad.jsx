@@ -233,13 +233,13 @@ export default function Comunidad() {
         {pestaña === 'grupos' && (
           <div className="d-flex justify-content-center mb-4 gap-2">
             <button 
-              className={`btn ${filtroVista === 'todos' ? 'btn-success' : 'btn-outline-success'}`}
+              className={`btn-vault-tabs ${filtroVista === 'todos' ? 'active' : ''}`}
               onClick={() => setFiltroVista('todos')}
             >
               Todos los Grupos
             </button>
             <button 
-              className={`btn ${filtroVista === 'mios' ? 'btn-success' : 'btn-outline-success'}`}
+              className={`btn-vault-tabs ${filtroVista === 'mios' ? 'active' : ''}`}
               onClick={() => setFiltroVista('mios')}
             >
               Mis Grupos
