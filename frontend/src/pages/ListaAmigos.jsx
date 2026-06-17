@@ -67,31 +67,21 @@ export default function TusAmigos() {
 const obtenerEstadoConexion = (ultimaConexion) => {
   if (!ultimaConexion) return { online: false, texto: "Desconectado" };
 
-  const ultima = new Date(ultimaConexion).getTime();
-  const ahora = new Date().getTime();
+  const ultima = new Date(ultimaConexion);
+  const ahora = new Date();
+  const diferenciaMinutos = (ahora - ultima) / 1000 / 60;
   
-  const diferenciaMinutos = Math.floor((ahora - ultima) / (1000 * 60));
+  if (diferenciaMinutos < 5) return { online: true, texto: "● En línea" };
 
-  // Si la diferencia está entre -5 y +5 minutos, está en línea.
-  if (diferenciaMinutos >= -5 && diferenciaMinutos < 5) {
-    return { online: true, texto: "En línea" };
+  const esHoy = ultima.getDate() === ahora.getDate() &&
+                ultima.getMonth() === ahora.getMonth() &&
+                ultima.getFullYear() === ahora.getFullYear();
+
+  if (esHoy) {
+    return { online: false, texto: "Última vez: Hoy" };
+  } else {
+    return { online: false, texto: `Última vez: ${ultima.toLocaleDateString()}` };
   }
-
-  // Seguimos con la lógica de hoy/ayer
-  const ultimaDate = new Date(ultimaConexion);
-  const ahoraDate = new Date();
-
-  if (ultimaDate.toDateString() === ahoraDate.toDateString()) {
-    return { online: false, texto: "Última conexión hoy" };
-  }
-
-  const ayer = new Date();
-  ayer.setDate(ahoraDate.getDate() - 1);
-  if (ultimaDate.toDateString() === ayer.toDateString()) {
-    return { online: false, texto: "Última conexión ayer" };
-  }
-
-  return { online: false, texto: `Última conexión el ${ultimaDate.toLocaleDateString()}` };
 };
 
   const gestionarAccion = async (id, accion) => {
@@ -289,9 +279,6 @@ const obtenerEstadoConexion = (ultimaConexion) => {
                         <div className="flex-grow-1">
                           <h5 className="mb-0">{amigo.nombreUsuario}</h5>
                           <div className={`status-indicator small ${estado.online ? "text-success fw-bold" : "status-offline"}`}>
-                            {estado.online && (
-                              <i className="bi bi-circle-fill me-1" style={{ fontSize: "0.4rem", verticalAlign: "middle" }}></i>
-                            )}
                             <span>{estado.texto}</span>
                           </div>
                         </div>
