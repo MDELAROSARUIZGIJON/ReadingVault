@@ -224,7 +224,12 @@ export default function MiembrosGrupo() {
                     const esElMismo = membro.usuario.idUsuario === sesion.idUsuario;
                     const esAdminDelFila = membro.rol === "admin";
                     const estado = obtenerEstadoConexion(membro.usuario.ultimaConexion);
-
+                    console.log("DEBUG ESTADO:", {
+                      nombre: membro.usuario.nombreUsuario,
+                      ultimaConexionRaw: membro.usuario.ultimaConexion,
+                      ahora: new Date().toISOString(),
+                      diferenciaCalculada: (new Date() - new Date(membro.usuario.ultimaConexion)) / 1000 / 60
+                  });
                     return (
                       <div key={membro.usuario.idUsuario} className="amigo-item-card d-flex align-items-center p-3 mb-3 bg-white rounded-4 shadow-sm">
                         <img src={membro.usuario.fotoPerfil || FOTO_DEFECTO} className="amigo-avatar me-3" alt="avatar" style={{ width: "50px", height: "50px", borderRadius: "50%", objectFit: "cover" }} />
